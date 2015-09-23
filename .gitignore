@@ -1,0 +1,12 @@
+# 
+bin/Configuration/
+bin/tempfiles/
+
+# ignore OSX crap
+.DS_Store
+
+# sublime
+._*
+
+# 
+.Rhistory
