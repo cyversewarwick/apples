@@ -1,0 +1,242 @@
+#!/usr/bin/perl
+
+# additional custom library path
+
+use strict;
+
+# BASEDIR contains path to ORANGES base directory
+use lib "../../";
+
+# This is the ORANGES Loader for APPLES. Go fruit.
+BEGIN {
+	use Configuration::AppleSeeds;
+	Configuration::AppleSeeds::load_APPLES();
+	1;
+}
+
+use Runtime;
+
+use JSON;
+use Data::Dumper;
+
+use Sequences::Database::Relative_Location;
+use Sequences::Database::Sequence::Ensembl;
+use Sequences::Database::Sequence::Genbank;
+
+use Datatypes::Sequence::Local;
+use Jobs::Subtasks::Seaweed_Job;
+
+use Serialization::Serializable;
+
+use List::Util qw(shuffle);
+
+#<=== SET PARAMETERS ===>#
+#Two species that you're going to be comparing
+my $species_1 = "arabidopsis thaliana";#"arabidopsis thaliana";
+my $species_2 = "vitis vinifera";#"oryza sativa";
+
+#How much upstream sequence to take
+my $sequence_length = 2000;
+#Window size for seaweeds algorithm
+my $window_size = 60;
+
+my $pseudo_orthologs = 0; # 1=TRUE
+
+my $outfile_fn = "/home/grannysmith/data/AtVv_testing.txt";
+open my $outfile, ">$outfile_fn";
+
+#<=== LOAD RBHS ===>#
+my %rbhs = ();
+
+my $rbh_file = "/home/grannysmith/data/dummyAtVvorths.txt";
+open my $rbhs_data, "<$rbh_file", or die "\nError: Could not open rbh file";
+$_ = <$rbhs_data>;
+while(<$rbhs_data>)
+{
+    chomp;
+    my @split = split(/\t/);
+    push(@{$rbhs{$split[0]}}, $split[1]);
+}
+close $rbhs_data;
+
+#<== SET PSEUDO ORTHOLOGS ==>#
+if($pseudo_orthologs)
+{
+    my @useful_genes = ();
+    my @useful_rbhs = ();
+    my %rbh_numbers;
+    
+    foreach my $rbh (keys %rbhs)
+    {
+        push(@useful_genes, $rbh);
+        my $no_rbhs = 0;
+        foreach my $ortholog (@{$rbhs{$rbh}})
+        {
+            push(@useful_rbhs, $ortholog);
+            $no_rbhs++;
+        }
+        $rbh_numbers{$rbh} = $no_rbhs;
+    }
+    
+    %rbhs = ();
+    
+    @useful_genes = shuffle(@useful_genes);
+    @useful_rbhs = shuffle(@useful_rbhs);
+    
+    my $j = 0;
+    for(my $i=0;$i<scalar(@useful_genes);$i++)
+    {
+        while($rbh_numbers{$useful_genes[$i]})
+        {
+            push(@{$rbhs{$useful_genes[$i]}}, $useful_rbhs[$j]);
+            $j++;
+            $rbh_numbers{$useful_genes[$i]}--;
+        }
+    }
+}
+
+#<=== GET GENES ===>#
+my $local_db = get_sequence_database("ensembl_local");
+
+my @species_2_genes = @{$local_db->get_all_accessions($species_2)};
+
+my @species_1_genes = @{$local_db->get_all_accessions($species_1)};
+
+#<=== BEGIN CONSERVATION SEARCH ===>#
+#Go through all S1 genes
+
+my $start_id = "AT3G01850";
+my $begin = 1;
+
+my $total = 0;
+my $count = 0;
+
+foreach my $s1_gene_accession (@species_1_genes)
+{
+    $total++;
+    if($s1_gene_accession eq $start_id)
+    {
+        $begin = 1;
+    }
+    
+    if($begin)
+    {
+        foreach my $s2_gene_accession (@{$rbhs{$s1_gene_accession}})
+        {
+            $count++;
+            #Get the RBH in species 2
+            
+            #Now we have to check if we can take the sequence we want to take
+            #So, get the sequences
+            my $gene_1_sequence = $local_db->get_gene_sequence_by_accession($species_1, $s1_gene_accession);
+
+            my $gene_2_sequence = $local_db->get_gene_sequence_by_accession($species_2, $s2_gene_accession);
+            
+            #        print Dumper($gene_2_sequence);
+            #Where do they start on the chromosome?
+            my $gene_1_start = $gene_1_sequence->[0]->{"five_prime_pos"};
+            my $gene_2_start = $gene_2_sequence->[0]->{"five_prime_pos"};
+            
+            #Upstream sequence length defaults
+            my $species_1_length = $sequence_length;
+            my $species_2_length = $sequence_length;
+            
+            #If we can't physically take that length of sequence, then we need to cut it down
+            if($gene_1_start < $species_1_length)
+            {
+                $species_1_length = $gene_1_start;
+            }
+            if($gene_2_start < $species_2_length)
+            {
+                $species_2_length = $gene_2_start;
+            }
+            
+            #Take both of the upstream sequences
+            my $species_1_sequence = $local_db->get_sequence_by_location
+            (
+                Sequences::Database::Relative_Location->new
+                (
+                    identifier => $s1_gene_accession,
+                    offset => - $species_1_length,
+                    'length' => $species_1_length,
+                    stop_at_neighbours => 1,
+                    'anchor' => "5' end"
+                )
+            );
+            
+            my $species_2_sequence = $local_db->get_sequence_by_location
+            (
+                Sequences::Database::Relative_Location->new
+                (
+                    identifier => $s2_gene_accession,
+                    offset => - $species_2_length,
+                    'length' => $species_2_length,
+                    stop_at_neighbours => 1,
+                    'anchor' => "5' end"
+                )
+            );
+            
+            #Both sequences must be above or equal to the window size
+            if(length($species_1_sequence->[0]->seq) >= $window_size && length($species_2_sequence->[0]->seq) >= $window_size)
+            {
+                #Remove IUPAC codes
+                my $sequence_one = $species_1_sequence->[0]->seq;
+                $sequence_one =~ s/[^(A|T|C|G)]/N/g;
+                my $sequence_two = $species_2_sequence->[0]->seq;
+                $sequence_two =~ s/[^(A|T|C|G)]/N/g;
+
+                #If we're ready to conduct the conservation analysis, then...
+                #Create the sequences
+                my $species_1_final = Datatypes::Sequence::Local->new_from_string
+                (
+                $sequence_one, $species_1,
+                );
+                my $species_2_final = Datatypes::Sequence::Local->new_from_string
+                (
+                $sequence_two, $species_2,
+                );
+                
+                
+                #Set up the job
+                my $job = Jobs::Subtasks::Seaweed_Job->new
+                (
+                sequence_1 => $species_1_final,
+                sequence_2 => $species_2_final,
+                windowsize => $window_size,
+                );
+                
+                #And run the job
+                my $result = $job->run;
+
+                
+                #What is the max alignment value for this run of seaweeds?
+                my $alignmax = 0;
+                foreach my $cur_val (values %{$result->{"plot"}})
+                {
+                    if($cur_val > $alignmax)
+                    {
+                        $alignmax = $cur_val;
+                    }
+                }
+                
+                #Print the appropriate output
+                print $outfile "--PairStart\n";
+                print $outfile $s1_gene_accession . "\n";
+                print $outfile $s2_gene_accession . "\n";
+                print $outfile $species_1_sequence->[0]->seq . "\n";
+                print $outfile $species_2_sequence->[0]->seq . "\n";
+                print $outfile $alignmax . "\n";
+                print $outfile "--PairEnd\n";
+                
+                print "\n$s1_gene_accession -> $s2_gene_accession ($alignmax)";
+                
+            }
+            #print "\nGen:" . substr($gene_1_sequence->[0]->seq, 0, 10);
+            #print "\n" . Dumper($species_1_sequence->[0]->seq);
+            #exit;
+        }
+    }
+}
+
+print "\nTotal total: $total vs $count";
+exit;
