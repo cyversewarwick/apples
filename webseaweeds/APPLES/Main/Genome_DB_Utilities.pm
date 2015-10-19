@@ -34,6 +34,7 @@ class Genome_DB_Utilities {
   use Moose;
   has 'registry' => (is => 'rw', isa => 'Any', clearer => 'private_clear_registry');
   has 'current_registry_location' => (is => 'rw', isa => 'Str', clearer => 'private_clear_location'); # is private clearer method necessary?
+  has 'local_ensembl_registry_conf' => (is => 'ro', isa => 'Str', default => '../webseaweeds/Configuration/ensembl_registry_fuji.conf');
 
   my $GU = General_Utilities->new();
   my $gb = new Bio::DB::GenBank;
@@ -1185,7 +1186,7 @@ class Genome_DB_Utilities {
       
   method private_connect_to_registry (Str $location, Str $dbname) {
       my $registry = 'Bio::EnsEMBL::Registry';
-      
+      # confess "\n Genome_DB_Utilities, line 1188, private_connect_to_registry\n";
 
       if (defined $self->registry) {
 	  if ($self->current_registry_location ne $location) {
@@ -1213,10 +1214,12 @@ class Genome_DB_Utilities {
 	      $registry->set_disconnect_when_inactive();
 	  } 
 	  elsif ($location eq 'local') {
-      print "\nGenome_DB_Utilities line 1216.\n";
+       # print "Genome_DB_Utilities 1216, config\n"  . $config->{"ensembl_registry_conf"};
 	    $GU->user_info(3, "Requested DB is local\n");#debugging
-	    my $ensembl_registry_conf = "/home/grannysmith/webseaweeds/Configuration/ensembl_registry_voland.conf"; #[fixed] - nd
+	    # my $ensembl_registry_conf = "/home/grannysmith/webseaweeds/Configuration/ensembl_registry_voland.conf"; #[fixed] - nd
+      my $ensembl_registry_conf = $self->local_ensembl_registry_conf;
       print "\nGenome_DB_Utilities line 1219.\n";
+      # confess $ensembl_registry_conf;
       $registry->load_all($ensembl_registry_conf, 1); # 1 (optional) gives verbose output
 
 	    # die if api/database versions mismatch
@@ -1767,7 +1770,7 @@ method private_get_id_and_distance_of_neighbouring_ensembl_gene (Reg_Loc $reg_lo
     # uses ensembl's version_check method to check if database version and api version match
     # a mismatch results in 'die'; a match returns 1.
     my $registry = 'Bio::EnsEMBL::Registry';
-    my $ensembl_registry_conf = "/home/grannysmith/webseaweeds/Configuration/ensembl_registry_voland.conf"; # environmental variable (set in $GU->load_includes, from value specified in APPLES.dat config file)
+    my $ensembl_registry_conf = $self->local_ensembl_registry_conf; # environmental variable (set in $GU->load_includes, from value specified in APPLES.dat config file)
     $registry->load_all($ensembl_registry_conf);
     
     # die if api/database versions mismatch
@@ -1784,7 +1787,8 @@ method private_get_id_and_distance_of_neighbouring_ensembl_gene (Reg_Loc $reg_lo
 	$check = $registry->version_check($db_adaptors[0]);
     }
     if (!$check) {
-      die 'mismatch between API version and ensembl database version';
+      # die 'mismatch between API version and ensembl database version';
+      print 'APPLES: mismatch between API version and ensembl database version';
     }
     else {
       return 1;
