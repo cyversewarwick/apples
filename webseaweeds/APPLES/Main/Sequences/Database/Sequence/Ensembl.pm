@@ -109,7 +109,8 @@ sub _initialize_registry {
 			$registry->set_disconnect_when_inactive();
 		} elsif ( $registry_location eq 'local' ) {
 			my $ensembl_registry_conf = config->{ensembl_registry_conf};
-
+			# print Dumper(config);
+			# confess "\nEnsembl.pm 113\n";
             #print Dumper($ensembl_registry_conf);
             #die();
 			unless ( defined($ensembl_registry_conf)

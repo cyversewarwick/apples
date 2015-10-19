@@ -715,7 +715,7 @@ class Star_Bundler {
 					  'label' => $label
 				     );
 		    print "Star_Bundler line 717.\n";
-		    print Dumper($remo);
+		    # print Dumper($remo);
               $remo->get_sequence();# fill out sequences
             print "Star_Bundler line 720.\n";
 		    push (@remos, $remo);

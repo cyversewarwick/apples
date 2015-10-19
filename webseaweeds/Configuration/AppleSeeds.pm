@@ -102,7 +102,7 @@ sub load_APPLES {
 	}
 	our $apples_dir = $config{APPLES_directory}
 	  || File::Spec->catdir( $basedir, "APPLES", "Main" );
-
+	# print "load_APPLES 105, config\n"  . Dumper(\%config);
 	$apples_dir = File::Spec->rel2abs($apples_dir);
 
 	if ( $apples_dir
