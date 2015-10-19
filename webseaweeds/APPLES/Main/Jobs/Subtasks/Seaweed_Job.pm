@@ -210,12 +210,46 @@ class Jobs::Subtasks::Seaweed_Job extends Jobs::Job {
 							. "--output-file ${prefix}_nr "
 							. $code_parameters	);
 
-		foreach my $pe (@plot_exec) {
-			# here stuff gets run!
-			debug("Running command: $pe\n");
-			print "Running command: $pe\n";
+		# foreach my $pe (@plot_exec) {
+		# 	# here stuff gets run!
+		# 	debug("Running command: $pe\n");
+		# 	print "Running command: $pe\n";
 
-			qx($pe 2>&1);
+			# qx($pe 2>&1);
+		# }
+
+		for (my $i=1; $i<=3; $i++) {
+
+			print "Seaweed_Job: Running command 1/2, ($i/3): \n$plot_exec[0]\n";
+			print qx($plot_exec[0] 2>&1);
+
+			sleep $i-1;
+
+			if (-f "${prefix}_nn_profile_1" &&
+					-f "${prefix}_nn_profile_2" &&
+					-f "${prefix}_nn_result") {
+				print "nn output files are ready.\n";
+				last;
+			} else {
+				print "No nn output files, run command again.\n";
+			}
+		}
+
+		for (my $i=1; $i<=3; $i++) {
+
+			print "Seaweed_Job: Running command 2/2, ($i/3): \n$plot_exec[1]\n";
+			print qx($plot_exec[1] 2>&1);
+
+			sleep $i-1;
+
+			if (-f "${prefix}_nr_profile_1" &&
+					-f "${prefix}_nr_profile_2" &&
+					-f "${prefix}_nr_result") {
+				print "nr output files are ready.\n";
+				last;
+			} else {
+				print "No nr output files, run command again.\n";
+			}
 		}
 
         #print "\nReading PROFILE from : ${prefix}";
