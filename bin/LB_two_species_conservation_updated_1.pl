@@ -5,7 +5,7 @@
 use strict;
 
 # BASEDIR contains path to ORANGES base directory
-use lib "../../";
+use lib "../webseaweeds/";
 
 # This is the ORANGES Loader for APPLES. Go fruit.
 BEGIN {
@@ -32,8 +32,8 @@ use List::Util qw(shuffle);
 
 #<=== SET PARAMETERS ===>#
 #Two species that you're going to be comparing
-my $species_1 = "arabidopsis thaliana";#"arabidopsis thaliana";
-my $species_2 = "vitis vinifera";#"oryza sativa";
+my $species_1 = "vitis vinifera";#"oryza sativa";
+my $species_2 = "arabidopsis thaliana";#"arabidopsis thaliana";
 
 #How much upstream sequence to take
 my $sequence_length = 2000;
@@ -42,23 +42,25 @@ my $window_size = 60;
 
 my $pseudo_orthologs = 0; # 1=TRUE
 
-my $outfile_fn = "/home/grannysmith/data/AtVv_testing.txt";
+my $outfile_fn = "../output/conservation_result_two_species_plantV_plantA_long.txt";
 open my $outfile, ">$outfile_fn";
 
 #<=== LOAD RBHS ===>#
 my %rbhs = ();
 
-my $rbh_file = "/home/grannysmith/data/dummyAtVvorths.txt";
+# my $rbh_file = "../output/rbhSearchForked_result_plantV_plantA.txt"; # short version
+my $rbh_file = "../output/rbhSearchForked_result_Vitis_vinifera_Arabidopsis_thaliana.txt"; # long version
 open my $rbhs_data, "<$rbh_file", or die "\nError: Could not open rbh file";
 $_ = <$rbhs_data>;
 while(<$rbhs_data>)
 {
     chomp;
     my @split = split(/\t/);
-    push(@{$rbhs{$split[0]}}, $split[1]);
+    # push(@{$rbhs{$split[0]}}, $split[1]);
+    $rbhs{$split[3]} = $split[2];
 }
 close $rbhs_data;
-
+print Dumper (%rbhs);
 #<== SET PSEUDO ORTHOLOGS ==>#
 if($pseudo_orthologs)
 {
@@ -98,15 +100,14 @@ if($pseudo_orthologs)
 #<=== GET GENES ===>#
 my $local_db = get_sequence_database("ensembl_local");
 
-my @species_2_genes = @{$local_db->get_all_accessions($species_2)};
-
 my @species_1_genes = @{$local_db->get_all_accessions($species_1)};
+my @species_2_genes = @{$local_db->get_all_accessions($species_2)};
 
 #<=== BEGIN CONSERVATION SEARCH ===>#
 #Go through all S1 genes
 
 my $start_id = "AT3G01850";
-my $begin = 1;
+my $begin = 1; # 0 to begin with the gene specified in $start_id, 1 otherwise.
 
 my $total = 0;
 my $count = 0;
@@ -114,6 +115,9 @@ my $count = 0;
 foreach my $s1_gene_accession (@species_1_genes)
 {
     $total++;
+    
+    # print $total . "\n";
+
     if($s1_gene_accession eq $start_id)
     {
         $begin = 1;
@@ -121,10 +125,13 @@ foreach my $s1_gene_accession (@species_1_genes)
     
     if($begin)
     {
-        foreach my $s2_gene_accession (@{$rbhs{$s1_gene_accession}})
+        # print $rbhs{$s1_gene_accession} . "\n";
+        # foreach my $s2_gene_accession (@{$rbhs{$s1_gene_accession}})
+        if(defined($rbhs{$s1_gene_accession}) && $rbhs{$s1_gene_accession} ne "none")
         {
             $count++;
             #Get the RBH in species 2
+            my $s2_gene_accession = $rbhs{$s1_gene_accession};
             
             #Now we have to check if we can take the sequence we want to take
             #So, get the sequences
@@ -208,6 +215,9 @@ foreach my $s1_gene_accession (@species_1_genes)
                 #And run the job
                 my $result = $job->run;
 
+                print "\nConservation script two species, removing temporary files.\n";
+                unlink glob "'./tempfiles/*'";
+                print "\nConservation script two species, seaweed tempfiles removed.\n";
                 
                 #What is the max alignment value for this run of seaweeds?
                 my $alignmax = 0;
