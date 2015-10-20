@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+
+
 use MooseX::Declare;
 
 =head2 Two sequence input seaweed job.
@@ -17,6 +19,13 @@ class Jobs::Subtasks::Seaweed_Job extends Jobs::Job {
 	use File::Temp qw/ tempfile /;
 	use Cwd;
 	use List::Util qw(min max);
+
+	use POSIX;# ":sys_wait_h";
+	use Time::HiRes qw(sleep);
+	use Test::More 'no_plan';
+	use DBI;
+
+	use Data::Dumper;
 
 	require Datatypes::Results::Alignment_Plot;
 
@@ -37,6 +46,18 @@ class Jobs::Subtasks::Seaweed_Job extends Jobs::Job {
 						  isa           => "Int",
 						  documentation => 'P1: Window Size',
 						  default       => sub { return 60; },
+	);
+
+	has 'dbhs' => (
+					is 				=> 'rw',
+					traits  		=> ['Array'],
+					isa				=> 'ArrayRef[DBI::db]',
+					documentation	=> 'Array of DBI handles',
+					required 		=> 0,
+					default			=> sub { [] },
+					handles 		=> {
+							add_handle=>'push',
+						},
 	);
 
 	has 'masked' => (
@@ -218,10 +239,59 @@ class Jobs::Subtasks::Seaweed_Job extends Jobs::Job {
 			# qx($pe 2>&1);
 		# }
 
+		my @file_suffix = ( "nn" , "nr"); # Todo in the next commit
+
+		my $timeout = 10; # seconds, max to wait for seaweed binary to complete
+		# my @db_handles = $self->dbhs();
+
 		for (my $i=1; $i<=3; $i++) {
 
 			print "Seaweed_Job: Running command 1/2, ($i/3): \n$plot_exec[0]\n";
+
+			my $start_time = time();
+			my $child_pid = fork();
+			die "Could not fork.\n" if not defined $child_pid;
+
+			if (not $child_pid) {
+				# In child
+				# print "Seaweed_Job: db_handles: ". Dumper(@db_handles)."\n";
+				# print Dumper($db_handles[1]);
+				# isa_ok($db_handles[1],'DBI::db');
+				# $db_handles[1]->{"InactiveDestroy"} = 1;
+				# $db_handles[2]->{"InactiveDestroy"} = 1;
+				foreach my $dbh (@{ $self->dbhs }) {
+					print "Seaweed_Job: dbh: " . Dumper($dbh) ."\n";
+					isa_ok($dbh, 'DBI::db');
+					$dbh->{"InactiveDestroy"} = 1;
+				}
+
 			print qx($plot_exec[0] 2>&1);
+			print "Seaweed_Job: Child process comopleted.\n";
+			exit 3; # Child completed.
+
+			}else {
+				# In parent
+				while (1) {
+
+					my $res = waitpid($child_pid, WNOHANG);
+					sleep(0.1);
+
+					if ($res == -1) {
+						print "Error from seaweed binary: ". ($? >> 8) ."\n";
+						last;
+					}
+
+					if ($res) {
+						last;
+					}
+
+					if (time() - $start_time > $timeout) {
+						print "Timeout, killing child pid: $child_pid.\n";
+						kill (SIGKILL, $child_pid); # SIGKILL = 15
+						last;
+					}
+				}
+			}
 
 			sleep $i-1;
 
@@ -238,7 +308,37 @@ class Jobs::Subtasks::Seaweed_Job extends Jobs::Job {
 		for (my $i=1; $i<=3; $i++) {
 
 			print "Seaweed_Job: Running command 2/2, ($i/3): \n$plot_exec[1]\n";
+			
+			# my $start_time = time();
+			# my $child_pid = fork();
+			# die "Could not fork.\n" if not defined $child_pid;
+
+			# if (not $child_pid) {
+			# 	# In child
 			print qx($plot_exec[1] 2>&1);
+			# exit 3; # Child completed.
+
+			# } else {
+			# 	# In parent
+			# 	while (1) {
+
+			# 		my $res = waitpid($child_pid, WNOHANG);
+			# 		sleep (0.1);
+
+			# 		if ($res == -1) {
+			# 			print "Error from seaweed binary: ". ($? >> 8) ."\n";
+			# 			last;
+			# 		}
+			# 		if ($res) {
+			# 			last;
+			# 		}
+			# 		if (time() - $start_time > $timeout) {
+			# 			print "Timeout, killing child pid: $child_pid.\n";
+			# 			kill (SIGKILL, $child_pid); # SIGKILL = 15
+			# 			last;
+			# 		}
+			# 	}
+			# }
 
 			sleep $i-1;
 

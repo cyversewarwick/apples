@@ -211,6 +211,24 @@ foreach my $s1_gene_accession (@species_1_genes)
                 sequence_2 => $species_2_final,
                 windowsize => $window_size,
                 );
+
+                my @db_handles;
+                # my $ensembl_registry = 'Bio::EnsEMBL::Registry';
+                my $ensembl_registry = $local_db->{"registry"};
+                # print Dumper($local_db);
+                
+                my @db_adaptors = @{ $ensembl_registry->get_all_DBAdaptors() };
+                foreach my $db_adaptor (@db_adaptors) {
+                    # print "db_adaptor: " . Dumper($db_adaptor);
+                    my $db_connection = $db_adaptor->dbc();
+                    # push @db_handles, $db_connection->db_handle();
+                    $job->add_handle($db_connection->db_handle());
+
+                    # push @db_handles, $db_connection->db_handle();
+                    # print "script: $db_connection->db_handle()". Dumper($db_connection->db_handle()) . "\n";
+                }
+                # print "db_handles:" . Dumper (@db_handles);
+
                 
                 #And run the job
                 my $result = $job->run;
