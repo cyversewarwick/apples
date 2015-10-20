@@ -1,0 +1,41 @@
+# APPLES configuration
+
+## Directories
+basedir = ../webseaweeds
+jobtempdir = /var/webservices/webseaweeds/jobs
+## this should be a directory that is only accessible to the
+## current user, it is used to store cookie and authentication
+## information
+usertempdir = /tmp
+
+## runner setup
+jobs_hostid = agave-fuji20-vm
+
+# This is the configuration for Ensembl
+#ensembl = /home/agave/lib/perl/
+ensembl_registry_conf = ../webseaweeds/Configuration/ensembl_registry_fuji20.conf
+
+# FASTA config
+fastapath = ../FASTADB
+
+# BLAST config
+blast = /opt/ncbi-blast/bin
+blast_db = ../BLASTDB
+
+# The seaweed/alignment code executable
+# Used for conservation script
+path_to_windowalignment = /home/agave/lib/bin-seaweeds/AlignmentPlot_posix_default_release
+#path_to_pssmtool = /home/agave/lib/bin-seaweeds/PSSM_Tool_posix_default_release
+#path_to_dot = /usr/bin/dot
+#path_to_qvalue = /opt/meme/bin/qvalue
+
+pssmtool_histogram_directory = /var/webservices/webseaweeds/hist_profiles
+
+# Caching
+cache_config = ../webseaweeds/Configuration/config_cache_fuji.txt
+
+<resultdb>
+## Database access
+
+
+</resultdb>
