@@ -1,5 +1,6 @@
 #!/usr/bin/perl
 
+# derived form LB_two_species_conservation_updated_1.pl
 # additional custom library path
 
 use strict;
