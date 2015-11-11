@@ -41,16 +41,17 @@ my $sequence_length = 2000;
 #Window size for seaweeds algorithm
 my $window_size = 60;
 
-my $pseudo_orthologs = 0; # 1=TRUE
+my $pseudo_orthologs = 1; # 1=TRUE
 
-my $outfile_fn = "../output/conservation_result_two_species_plantV_plantA_long.txt";
+my $outfile_fn = "../output/conservation_result_two_species_plantV_plantA_short.txt";
+# my $outfile_fn = "../output/conservation_result_two_species_plantV_plantA_long.txt";
 open my $outfile, ">$outfile_fn";
 
 #<=== LOAD RBHS ===>#
 my %rbhs = ();
 
-# my $rbh_file = "../output/rbhSearchForked_result_plantV_plantA.txt"; # short version
-my $rbh_file = "../output/rbhSearchForked_result_Vitis_vinifera_Arabidopsis_thaliana.txt"; # long version
+my $rbh_file = "../output/rbhSearchForked_result_plantV_plantA.txt"; # short version
+# my $rbh_file = "../output/rbhSearchForked_result_Vitis_vinifera_Arabidopsis_thaliana.txt"; # long version
 open my $rbhs_data, "<$rbh_file", or die "\nError: Could not open rbh file";
 $_ = <$rbhs_data>;
 while(<$rbhs_data>)
@@ -67,18 +68,14 @@ if($pseudo_orthologs)
 {
     my @useful_genes = ();
     my @useful_rbhs = ();
-    my %rbh_numbers;
     
     foreach my $rbh (keys %rbhs)
     {
-        push(@useful_genes, $rbh);
-        my $no_rbhs = 0;
-        foreach my $ortholog (@{$rbhs{$rbh}})
+        if($rbhs{$rbh} ne "none")
         {
-            push(@useful_rbhs, $ortholog);
-            $no_rbhs++;
+            push(@useful_genes, $rbh);
+            push(@useful_rbhs, $rbhs{$rbh});
         }
-        $rbh_numbers{$rbh} = $no_rbhs;
     }
     
     %rbhs = ();
@@ -86,17 +83,13 @@ if($pseudo_orthologs)
     @useful_genes = shuffle(@useful_genes);
     @useful_rbhs = shuffle(@useful_rbhs);
     
-    my $j = 0;
     for(my $i=0;$i<scalar(@useful_genes);$i++)
     {
-        while($rbh_numbers{$useful_genes[$i]})
-        {
-            push(@{$rbhs{$useful_genes[$i]}}, $useful_rbhs[$j]);
-            $j++;
-            $rbh_numbers{$useful_genes[$i]}--;
-        }
+        $rbhs{$useful_genes[$i]} = $useful_rbhs[$i];
     }
 }
+print Dumper (%rbhs);
+exit;
 
 #<=== GET GENES ===>#
 my $local_db = get_sequence_database("ensembl_local");
