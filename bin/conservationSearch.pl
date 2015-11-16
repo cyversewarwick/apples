@@ -182,9 +182,9 @@ foreach my $s1_gene_accession (@species_1_genes)
             {
                 #Remove IUPAC codes
                 my $sequence_one = $species_1_sequence->[0]->seq;
-                $sequence_one =~ s/[^(A|T|C|G)]/N/g;
+                $sequence_one =~ s/[^ATCG]/N/g;
                 my $sequence_two = $species_2_sequence->[0]->seq;
-                $sequence_two =~ s/[^(A|T|C|G)]/N/g;
+                $sequence_two =~ s/[^ATCG]/N/g;
 
                 #If we're ready to conduct the conservation analysis, then...
                 #Create the sequences

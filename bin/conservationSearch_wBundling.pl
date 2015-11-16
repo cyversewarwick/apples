@@ -55,15 +55,15 @@ my $window_size = 60;
 
 my $pseudo_orthologs = 1; # 1=TRUE
 
-my $outfile_fn = "../output/conservation_result_wB_two_species_plantV_plantA_short.txt";
-# my $outfile_fn = "../output/conservation_result_two_species_plantV_plantA_long.txt";
+# my $outfile_fn = "../output/conservation_result_wB_two_species_plantV_plantA_short.txt";
+my $outfile_fn = "../output/conservation_result_wB_pd_two_species_plantV_plantA_long.txt";
 open my $outfile, ">$outfile_fn";
 
 #<=== LOAD RBHS ===>#
 my %rbhs = ();
 
-my $rbh_file = "../output/rbhSearchForked_result_plantV_plantA.txt"; # short version
-# my $rbh_file = "../output/rbhSearchForked_result_Vitis_vinifera_Arabidopsis_thaliana.txt"; # long version
+# my $rbh_file = "../output/rbhSearchForked_result_plantV_plantA.txt"; # short version
+my $rbh_file = "../output/rbhSearchForked_result_Vitis_vinifera_Arabidopsis_thaliana.txt"; # long version
 open my $rbhs_data, "<$rbh_file", or die "\nError: Could not open rbh file";
 $_ = <$rbhs_data>;
 while(<$rbhs_data>)
@@ -202,10 +202,10 @@ foreach my $s1_gene_accession (@species_1_genes)
             if(length($species_1_sequence->[0]->seq) >= $window_size && length($species_2_sequence->[0]->seq) >= $window_size)
             {
                 #Remove IUPAC codes
-                # my $sequence_one = $species_1_sequence->[0]->seq;
-                # $sequence_one =~ s/[^(A|T|C|G)]/N/g;
-                # my $sequence_two = $species_2_sequence->[0]->seq;
-                # $sequence_two =~ s/[^(A|T|C|G)]/N/g;
+                my $sequence_one = $species_1_sequence->[0]->seq;
+                $sequence_one =~ s/[^ATCG]/N/g;
+                my $sequence_two = $species_2_sequence->[0]->seq;
+                $sequence_two =~ s/[^ATCG]/N/g;
 
                 #If we're ready to conduct the conservation analysis, then...
                 #Create the sequences
