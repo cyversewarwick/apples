@@ -20,6 +20,10 @@ use JSON;
 use NDU::Gen qw(:ALL);
 use Data::Dumper;
 
+#Read Commandline Options
+use Getopt::Long qw(GetOptions);
+Getopt::Long::Configure qw(gnu_getopt);
+
 #Grannysmith
 use Runtime;
 use Sequences::Database::Relative_Location;
@@ -53,17 +57,23 @@ my $sequence_length = 2000;
 #Window size for seaweeds algorithm
 my $window_size = 60;
 
-my $pseudo_orthologs = 1; # 1=TRUE
+my $pseudo_orthologs = 0; # 1=TRUE
 
-# my $outfile_fn = "../output/conservation_result_wB_two_species_plantV_plantA_short.txt";
-my $outfile_fn = "../output/conservation_result_wB_pd_two_species_plantV_plantA_long.txt";
+GetOptions(
+    'slength|l=i' => \$sequence_length,
+    'wsize|w=i' => \$window_size,
+    'pseudo|p' => \$pseudo_orthologs,
+    ) or die "Usage: $0 --slength INTEGER([2000], 500, 5000) --wsize INTEGER([60], 30, 80, 100) --pseudo\n";
+
+my $outfile_fn = "../output/conservation_result_wB_" . substr($db_1, 0, 2) . "_" . substr($db_2, 0, 2) .( $pseudo_orthologs ? "_ps" : "") . "_short.txt";
+# my $outfile_fn = "../output/conservation_result_wB_pd_two_species_plantV_plantA_long.txt";
 open my $outfile, ">$outfile_fn";
 
 #<=== LOAD RBHS ===>#
 my %rbhs = ();
 
-# my $rbh_file = "../output/rbhSearchForked_result_plantV_plantA.txt"; # short version
-my $rbh_file = "../output/rbhSearchForked_result_Vitis_vinifera_Arabidopsis_thaliana.txt"; # long version
+my $rbh_file = "../output/rbhSearchForked_result_plantV_plantA.txt"; # short version
+# my $rbh_file = "../output/rbhSearchForked_result_Vitis_vinifera_Arabidopsis_thaliana.txt"; # long version
 open my $rbhs_data, "<$rbh_file", or die "\nError: Could not open rbh file";
 $_ = <$rbhs_data>;
 while(<$rbhs_data>)
@@ -115,14 +125,12 @@ my @species_2_genes = @{$local_db->get_all_accessions($species_2)};
 my $start_id = "AT3G01850";
 my $begin = 1; # 0 to begin with the gene specified in $start_id, 1 otherwise.
 
-# my $total = 0;
-# my $count = 0;
+my $total = scalar @species_1_genes;
+my $count = 0;
 
 foreach my $s1_gene_accession (@species_1_genes)
 {
-    # $total++;
-    
-    # print $total . "\n";
+    $count++;
 
     if($s1_gene_accession eq $start_id)
     {
@@ -135,6 +143,7 @@ foreach my $s1_gene_accession (@species_1_genes)
         # foreach my $s2_gene_accession (@{$rbhs{$s1_gene_accession}})
         if(defined($rbhs{$s1_gene_accession}) && $rbhs{$s1_gene_accession} ne "none")
         {
+            print "Progress: ". $count . "/" . $total . " s1_gene_accession:" . $s1_gene_accession . "\n";
             #Get the RBH in species 2
             my $s2_gene_accession = $rbhs{$s1_gene_accession};
             
@@ -164,20 +173,16 @@ foreach my $s1_gene_accession (@species_1_genes)
             my $species_2_length = $sequence_length;
             
             #If we can't physically take that length of sequence, then we need to cut it down
-            if($gene_1_start < $species_1_length)
-            {
+            if($gene_1_start < $species_1_length){
                 $species_1_length = $gene_1_start;
             }
-            if($gene_2_start < $species_2_length)
-            {
+            if($gene_2_start < $species_2_length){
                 $species_2_length = $gene_2_start;
             }
             
             #Take both of the upstream sequences
-            my $species_1_sequence = $local_db->get_sequence_by_location
-            (
-                Sequences::Database::Relative_Location->new
-                (
+            my $species_1_sequence = $local_db->get_sequence_by_location(
+                Sequences::Database::Relative_Location->new(
                     identifier => $s1_gene_accession,
                     offset => - $species_1_length,
                     'length' => $species_1_length,
@@ -209,23 +214,22 @@ foreach my $s1_gene_accession (@species_1_genes)
 
                 #If we're ready to conduct the conservation analysis, then...
                 #Create the sequences
-                my $species_1_final = Datatypes::Sequence::Local->new_from_string
-                (
-                    $sequence_one, $species_1,
-                );
-                my $species_2_final = Datatypes::Sequence::Local->new_from_string
-                (
-                    $sequence_two, $species_2,
-                );
+                my $species_1_final = Datatypes::Sequence::Local->new_from_string(
+                        $sequence_one,
+                        $species_1,
+                    );
+                my $species_2_final = Datatypes::Sequence::Local->new_from_string(
+                        $sequence_two,
+                        $species_2,
+                    );
                 
                 
                 #Set up the job
-                my $job = Jobs::Subtasks::Seaweed_Job->new
-                (
-                sequence_1 => $species_1_final,
-                sequence_2 => $species_2_final,
-                windowsize => $window_size,
-                );
+                my $job = Jobs::Subtasks::Seaweed_Job->new(
+                        sequence_1 => $species_1_final,
+                        sequence_2 => $species_2_final,
+                        windowsize => $window_size,
+                    );
 
                 my @db_handles;
                 # my $ensembl_registry = 'Bio::EnsEMBL::Registry';
@@ -254,10 +258,8 @@ foreach my $s1_gene_accession (@species_1_genes)
                 
                 #What is the max alignment value for this run of seaweeds?
                 my $alignmax = 0;
-                foreach my $cur_val (values %{$result->{"plot"}})
-                {
-                    if($cur_val > $alignmax)
-                    {
+                foreach my $cur_val (values %{$result->{"plot"}}){
+                    if($cur_val > $alignmax){
                         $alignmax = $cur_val;
                     }
                 }
@@ -268,13 +270,18 @@ foreach my $s1_gene_accession (@species_1_genes)
                 push(@{$alignment_results}, convert_gs_seaweed_result_to_ap($result->plot));
                 
                 #<==Bundling==>#
-                my $rdb1 = Ensembl_Database_Parameters->new("dbname" => $db_1,
-                "alias" => $species_1,
-                "location" => "local");
+                my $rdb1 = Ensembl_Database_Parameters->new(
+                        "dbname" => $db_1,
+                        "alias" => $species_1,
+                        "location" => "local",
+                    );
                 
-                my $rdb2 = Ensembl_Database_Parameters->new("dbname" => $db_2,
-                "alias" => $species_2,
-                "location" => "local");
+                my $rdb2 = Ensembl_Database_Parameters->new(
+                        "dbname" => $db_2,
+                        "alias" => $species_2,
+                        "location" => "local",
+                    );
+                
                 #Get sequence information for the genomic intervals
                 my ($g1_region, $g1_coordsys) = $local_db->get_gene_information_by_accession($species_1, $s1_gene_accession);
                 my ($g2_region, $g2_coordsys) = $local_db->get_gene_information_by_accession($species_2, $s2_gene_accession);
@@ -288,26 +295,30 @@ foreach my $s1_gene_accession (@species_1_genes)
                 my $g2_strand = $species_2_sequence->[0]->{"strand"};
                 
                 #Set genomic interval data
-                my $s1_ginterval = Genomic_Interval->new("genome_db" => $rdb1,
-                                                        "region" => $g1_region,
-                                                        "five_prime_pos" => $g1_5prime,
-                                                        "three_prime_pos" => $g1_3prime,
-                                                        "strand" => $g1_strand,
-                                                        "working_sequence" => "ref_sequence",
-                                                        "coord_sys_name" => $g1_coordsys);
+                my $s1_ginterval = Genomic_Interval->new(
+                        "genome_db" => $rdb1,
+                        "region" => $g1_region,
+                        "five_prime_pos" => $g1_5prime,
+                        "three_prime_pos" => $g1_3prime,
+                        "strand" => $g1_strand,
+                        "working_sequence" => "ref_sequence",
+                        "coord_sys_name" => $g1_coordsys,
+                    );
                 
                 #Just in case
                 $s1_ginterval->{"gi_sequence"} = $species_1_sequence->[0]->seq;
                 $s1_ginterval->{"gi_sequence_repeatmasked"} = $species_1_sequence->[0]->{"masked_sequence"};
                 
                 #Set genomic interval data
-                my $s2_ginterval = Genomic_Interval->new("genome_db" => $rdb2,
-                                                        "region" => $g2_region,
-                                                        "five_prime_pos" => $g2_5prime,
-                                                        "three_prime_pos" => $g2_3prime,
-                                                        "strand" => $g2_strand,
-                                                        "working_sequence" => "ref_sequence",
-                                                        "coord_sys_name" => $g2_coordsys);
+                my $s2_ginterval = Genomic_Interval->new(
+                        "genome_db" => $rdb2,
+                        "region" => $g2_region,
+                        "five_prime_pos" => $g2_5prime,
+                        "three_prime_pos" => $g2_3prime,
+                        "strand" => $g2_strand,
+                        "working_sequence" => "ref_sequence",
+                        "coord_sys_name" => $g2_coordsys,
+                    );
                 
                 #Just in case
                 $s2_ginterval->{"gi_sequence"} = $species_2_sequence->[0]->seq;
@@ -315,35 +326,52 @@ foreach my $s1_gene_accession (@species_1_genes)
                 
                 #Make an interval set for comparison
                 my @arr = ($s2_ginterval);
-                my $interval_set = Genomic_Interval_Set->new("genomic_interval_set" => \@arr);
+                my $interval_set = Genomic_Interval_Set->new(
+                        "genomic_interval_set" => \@arr,
+                    );
                 
                 #Make an evolutionary tree (will not be used yet)
-                my $evtree1 = Evolutionary_Tree->new("root" => "oryza sativa",
-                "sub_trees" => []);
-                my $evtree2 = Evolutionary_Tree->new("root" => "musa acuminata",
-                "sub_trees" => []);
-                my $evtree3 = Evolutionary_Tree->new("root" => "",
-                "sub_trees" => [$evtree1, $evtree2]);
+                my $evtree1 = Evolutionary_Tree->new(
+                        "root" => "oryza sativa",
+                        "sub_trees" => [],
+                    );
+                my $evtree2 = Evolutionary_Tree->new(
+                        "root" => "musa acuminata",
+                        "sub_trees" => [],
+                    );
+                my $evtree3 = Evolutionary_Tree->new(
+                        "root" => "",
+                        "sub_trees" => [$evtree1, $evtree2],
+                    );
                 
                 #Make the parameters
-                my $ptm = Partial_Threshold_Matrix->new("evolutionary_tree" => $evtree3);
+                my $ptm = Partial_Threshold_Matrix->new(
+                        "evolutionary_tree" => $evtree3,
+                    );
                 
-                my $wpap = Seaweed_Algorithm_Parameters->new("stepwidth" => 1,
-                "windowlength" => 60,
-                "cutoff_for_uninteresting_alignments" => 57);
-                my $sbp = Star_Bundler_Parameters->new("overlap_tolerance" => 20,
-                "belief_value" => 0.05,
-                "partial_threshold_matrix" => $ptm); # LB - windowlength was set to 50 here, changed it to 60
+                my $wpap = Seaweed_Algorithm_Parameters->new(
+                        "stepwidth" => 1,
+                        "windowlength" => 60,
+                        "cutoff_for_uninteresting_alignments" => 57
+                    );
+                my $sbp = Star_Bundler_Parameters->new(
+                        "overlap_tolerance" => 20,
+                        "belief_value" => 0.05,
+                        "partial_threshold_matrix" => $ptm,
+                    ); # LB - windowlength was set to 50 here, changed it to 60
                 
-                my $sp = Sequence_Parameters->new("region" => "upstream",
-                "min_length_to_return" => 50,
-                "max_length_to_search" => 10000,
-                );
+                my $sp = Sequence_Parameters->new(
+                        "region" => "upstream",
+                        "min_length_to_return" => 50,
+                        "max_length_to_search" => 10000,
+                    );
                 
-                my $parameters = ReMo_Set_Phylogenetic_Constructor_Parameters->new("window_pair_algorithm_parameters" => $wpap,
-                                                                                    "star_bundler_parameters" => $sbp,
-                                                                                    "sequence_parameters" => $sp,
-                                                                                    "sequence_databases_to_use_for_homologs" => []);
+                my $parameters = ReMo_Set_Phylogenetic_Constructor_Parameters->new(
+                        "window_pair_algorithm_parameters" => $wpap,
+                        "star_bundler_parameters" => $sbp,
+                        "sequence_parameters" => $sp,
+                        "sequence_databases_to_use_for_homologs" => [],
+                    );
                 
                 my $bundler = Star_Bundler->new();
                 my @remo_sets = $bundler->truncated_bundle($s1_ginterval, $interval_set, $parameters, $alignment_results);
