@@ -211,11 +211,11 @@ foreach my $s1_gene_accession (@species_1_genes)
                 #Create the sequences
                 my $species_1_final = Datatypes::Sequence::Local->new_from_string
                 (
-                    $species_1_sequence->[0]->seq, $species_1,
+                    $sequence_one, $species_1,
                 );
                 my $species_2_final = Datatypes::Sequence::Local->new_from_string
                 (
-                    $species_2_sequence->[0]->seq, $species_2,
+                    $sequence_two, $species_2,
                 );
                 
                 
