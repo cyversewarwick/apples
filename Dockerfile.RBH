@@ -1,0 +1,4 @@
+FROM bogaotory/apples
+MAINTAINER Bo Gao <bogao@dcs.warwick.ac.uk>
+
+ENTRYPOINT ["bash", "/apples/wrapper_de_rbh.sh"]

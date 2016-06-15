@@ -1,10 +1,8 @@
-# README #
+# APPLES (Analysis of Plant Promoter-Linked Elements) #
 
-
-
-### What is this repository for? ###
-This repository contains the source codes for the iPlant version of the APPLES application package
+### Introduction ###
+This repository contains the source codes for the CyVerse/iPlant version of the APPLES application package
 Two functionalities are provided in this version:
 
-* Finding Orthologs as Reciprocal Best Hits
-* Finding Non-Coding Conserved Regions
+* Finding Orthologs as Reciprocal Best Hits (rbh-apples)
+* Finding Non-Coding Conserved Regions (conservation-apples)
