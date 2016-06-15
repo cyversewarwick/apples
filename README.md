@@ -8,5 +8,3 @@ Two functionalities are provided in this version:
 
 * Finding Orthologs as Reciprocal Best Hits
 * Finding Non-Coding Conserved Regions
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)

@@ -54,7 +54,7 @@ my $species_2 = $ARGV[1] . ' blastp';
 print "RBH from $ARGV[0] to $ARGV[1].\n";
 
 #my $in_fn = "/home/grannysmith/data/nasonia_bombyx_rbh.txt";
-my $out_fn = '../output/rbhSearch_result_' . $ARGV[0] . '_' . $ARGV[1] . '.txt';
+my $out_fn = '../outputs/rbhSearch_result_' . $ARGV[0] . '_' . $ARGV[1] . '.txt';
 open my $outfile, ">$out_fn";
 my $total_genes = 0;
 my $rbh_succ = 0;

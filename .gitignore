@@ -2,6 +2,16 @@
 bin/Configuration/
 bin/tempfiles/
 
+BLASTDB
+FASTADB
+
+inputs/*
+outputs/*
+
+bin/*
+!bin/rbhSearch.pl
+!bin/rbhSearchForked.pl
+
 # ignore OSX crap
 .DS_Store
 
