@@ -11,6 +11,8 @@ outputs/*
 bin/*
 !bin/rbhSearch.pl
 !bin/rbhSearchForked.pl
+!bin/utr_tool
+bin/utr_tool/test_data
 
 # ignore OSX crap
 .DS_Store
