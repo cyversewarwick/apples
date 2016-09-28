@@ -11,6 +11,7 @@ outputs/*
 bin/*
 !bin/rbhSearch.pl
 !bin/rbhSearchForked.pl
+!bin/conservationSearch_noDB.pl
 !bin/utr_tool
 bin/utr_tool/test_data
 
