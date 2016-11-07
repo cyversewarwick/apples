@@ -1,29 +1,47 @@
 #!/bin/bash
 set -e
 
-#inputs:
-# $1 - genome
-# $2 - gff3
-# $3 - gff3 header to use (TAIR 'gene_id=')
-# $4 - length of promoter sequence to take (upstream of TSS)
-# $5 - toggle whether to remove promoter overlapping bits with gene sequences
-# $6 - toggle whether to include 5' UTR sequence
+#Inputs:
+# $1 - Genome sequence fasta file (genome.fa)
+# $2 - Genome feature / annotation file (annot.gff3)
+# $3 - Gene ID prefix to look for in annot.gff3
+#      This is a string such as "gene_id=" or "ID=gene:" which prefixes the gene ID in column 9 of a gff3 file)
+# $4 - Length of promoter sequence to take (upstream of TSS)
+# $5 - Toggle whether to remove promoter overlapping bits with gene sequences
+# $6 - Toggle whether to include 5' UTR sequence
+
+
+# Prepare workspace
+if [ -d "works"]; then
+	mkdir works
+fi
+
+if [ -d "outputs"]; then
+	mkdir outputs
+fi
+
+cp $1 works/genome.fa
+cp $2 works/annot.gff3
+
+cd works
+
+# 
 
 #start off by filtering the .gff3 to gene lines only
-cp $2 annot.gff3
+# cp $2 works/annot.gff3
 grep -P '\tgene\t' annot.gff3 > genelines.gff3
 
 #strip the potential FASTA line breaks. creates genome_stripped.fa
-cp $1 genome.fa
-python3 ./scripts/strip_newlines.py
+# cp $1 genome.fa
+python3 ../scripts/strip_newlines.py # genome.fa -> genome_stripped.fa
 
 #create the .genome file
 samtools faidx genome_stripped.fa # creates .fai file
 cut -f 1-2 genome_stripped.fa.fai > bedgenome.genome
 
 #parse up the .bed for promoter extraction
-python3 ./scripts/parse_genelines.py $3
-python3 ./scripts/parse_utrs_bo.py
+python3 ../scripts/parse_genelines.py $3
+python3 ../scripts/parse_utrs_bo.py
 
 #create universe
 cut -f 4 genelines.bed > universe.txt
@@ -37,14 +55,14 @@ if [ $5 == '--NoOverlap' ]
 		mv promoters2.bed promoters.bed
 fi
 #assess integrity
-python3 ./scripts/assess_integrity.py
+python3 ../scripts/assess_integrity.py
 
 echo "hello"
 
 #possibly add 5' UTR
 if [ $6 == '--UseUTR' ]
 	then
-		python3 ./scripts/parse_utrs.py
+		python3 ../scripts/parse_utrs.py
 fi
 bedtools getfasta -fi genome_stripped.fa -bed promoters.bed -s -fo promoters.fa -name
 #this results in some really crappy nomenclature for gene names
@@ -60,3 +78,5 @@ bedtools getfasta -fi genome_stripped.fa -bed promoters.bed -s -fo promoters.fa 
 # rm promoters.bed
 
 # rm universe.txt
+
+# 
