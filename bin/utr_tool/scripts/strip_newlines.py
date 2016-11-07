@@ -1,3 +1,4 @@
+# from __future__ import print_function
 fid = open('genome.fa','r')
 fid2 = open('genome_stripped.fa','w')
 toggle = ''

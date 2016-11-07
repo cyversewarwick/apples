@@ -2,9 +2,12 @@ import pandas as pd
 import numpy as np
 
 #soak up current promoters.bed file
-prom = pd.read_csv('promoters.bed',header=None,index_col=None,sep='\t').values
+prom = pd.read_csv('genelines.bed',header=None,index_col=None,sep='\t').values
 annot = pd.read_csv('annot.gff3',header=None,index_col=None,sep='\t',comment='#').values
-univ = pd.read_csv('universe.txt',header=None,index_col=None).values
+
+#write out 5' UTR BED
+utr5 = open('utr5.bed','w')
+utr3 = open('utr3.bed','w')
 
 #the order is the same in the universe.txt as it is in annot.gff3
 #after all, annot.gff3 was used to craft universe.txt
@@ -18,10 +21,8 @@ geneinds.append(annot.shape[0]+1)
 
 #loop over the genes
 for i in np.arange(prom.shape[0]):
-	#find which of the geneinds is ours
-	j = np.where(univ==prom[i,3])[0][0]
 	#dig out the subannot and filter it to cds
-	subannot = annot[geneinds[j]:geneinds[j+1],:]
+	subannot = annot[geneinds[i]:geneinds[i+1],:]
 	noncds = []
 	for j in np.arange(subannot.shape[0]):
 		if 'CDS' not in subannot[j,:]:
@@ -30,14 +31,21 @@ for i in np.arange(prom.shape[0]):
 	#if there's anything found, continue
 	if temp.size:
 		if prom[i,5]=='+':
-			#"left to right" transcript. find earliest CDS start and replace end of promoter
+			#"left to right" transcript
 			newpos = np.min(temp[:,3])
-			prom[i,2] = newpos
-		else:
-			#"right to left" transcript. find latest CDS "end", which is in fact the earliest CDS start
-			#and replace "start" of promoter which is in fact its end
+			holdlist = [prom[i,0],prom[i,1],newpos,prom[i,3],prom[i,4],prom[i,5]]
+			utr5.write('\t'.join([str(x) for x in holdlist])+'\n')
 			newpos = np.max(temp[:,4])
-			prom[i,1] = newpos
+			holdlist = [prom[i,0],newpos,prom[i,2],prom[i,3],prom[i,4],prom[i,5]]
+			utr3.write('\t'.join([str(x) for x in holdlist])+'\n')
+		else:
+			#"right to left" transcript
+			newpos = np.max(temp[:,4])
+			holdlist = [prom[i,0],newpos,prom[i,2],prom[i,3],prom[i,4],prom[i,5]]
+			utr5.write('\t'.join([str(x) for x in holdlist])+'\n')
+			newpos = np.min(temp[:,3])
+			holdlist = [prom[i,0],prom[i,1],newpos,prom[i,3],prom[i,4],prom[i,5]]
+			utr3.write('\t'.join([str(x) for x in holdlist])+'\n')
 
-#export the 5' UTR'd promoter file
-np.savetxt('promoters.bed', prom, fmt='%s\t%i\t%i\t%s\t%i\t%s')
+utr5.close()
+utr3.close()
