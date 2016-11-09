@@ -12,6 +12,8 @@ bin/*
 !bin/rbhSearch.pl
 !bin/rbhSearchForked.pl
 !bin/conservationSearch_noDB.pl
+!bin/conservationSearch_fasta_wBundling.pl
+!bin/conservationSearch_cyverse.pl
 !bin/utr_tool
 bin/utr_tool/test_data
 
