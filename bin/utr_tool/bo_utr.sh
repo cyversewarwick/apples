@@ -12,11 +12,11 @@ set -e
 
 
 # Prepare workspace
-if [ -d "works"]; then
+if [ ! -d "works" ]; then
 	mkdir works
 fi
 
-if [ -d "outputs"]; then
+if [ ! -d "outputs" ]; then
 	mkdir outputs
 fi
 
@@ -40,13 +40,13 @@ samtools faidx genome_stripped.fa # creates .fai file
 cut -f 1-2 genome_stripped.fa.fai > bedgenome.genome
 
 #parse up the .bed for promoter extraction
-python3 ../scripts/parse_genelines.py $3
+#the python script takes the genelines.gff3 file and makes a genelines.bed out of it
+python3 ../scripts/parse_genelines.py $3 # -> genelines.bed
 python3 ../scripts/parse_utrs_bo.py
 
 #create universe
 cut -f 4 genelines.bed > universe.txt
 
-#the python script takes the genelines.gff3 file and makes a genelines.bed out of it
 bedtools flank -l $4 -r 0 -s -i genelines.bed -g bedgenome.genome > promoters.bed
 #remove overlapping promoter chunks
 if [ $5 == '--NoOverlap' ]
