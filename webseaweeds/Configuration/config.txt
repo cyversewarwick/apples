@@ -33,7 +33,7 @@ path_to_windowalignment = /apples/bin/seaweeds/AlignmentPlot_posix_default_relea
 pssmtool_histogram_directory = /var/webservices/webseaweeds/hist_profiles
 
 # Caching
-cache_config = ../webseaweeds/Configuration/config_cache_gs.txt
+# cache_config = ../webseaweeds/Configuration/config_cache_gs.txt
 
 <resultdb>
 ## Database access
