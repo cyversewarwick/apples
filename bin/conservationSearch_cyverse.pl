@@ -20,15 +20,17 @@ use JSON;
 use NDU::Gen qw(:ALL);
 use Data::Dumper;
 
+use File::Spec;
+
 #Read Commandline Options
 use Getopt::Long qw(GetOptions);
 Getopt::Long::Configure qw(gnu_getopt);
 
 #Grannysmith
 use Runtime;
-use Sequences::Database::Relative_Location;
-use Sequences::Database::Sequence::Ensembl;
-use Sequences::Database::Sequence::Genbank;
+# use Sequences::Database::Relative_Location;
+# use Sequences::Database::Sequence::Ensembl;
+# use Sequences::Database::Sequence::Genbank;
 use Datatypes::Sequence::Local;
 use Jobs::Subtasks::Seaweed_Job;
 use Serialization::Serializable;
@@ -44,20 +46,40 @@ use Partial_Threshold_Matrix_Maker;
 use Partial_Threshold_Matrix;
 use Parameters;
 
-#<=== SET PARAMETERS ===>#
+use constant {
+    CHROMID     => 0, # These define the column positions in the lookup hash of arrays
+    SEQSTART    => 1, # The arrangement of the first 6 columns (0-5) matches BED standard
+    SEQEND      => 2,
+    GENEID      => 3,
+    SCORE       => 4, # << We don't use this column in our calculation
+    DIRECTION   => 5,
+    FIVESTART   => 6, # The last four columns do not follow BED format
+    FIVEEND     => 7,
+    THREESTART  => 8,
+    THREEEND    => 9,
+    LASTCOLUMN  => 5,
+};
+
+
+
+#<=== PART 1: Set Parameters ===>#
+
 #Two species that you're going to be comparing
-my $species_1 = "vitis vinifera";#"oryza sativa";
-my $species_2 = "arabidopsis thaliana";#"arabidopsis thaliana";
+# my $species_1 = "plantA";#"oryza sativa";
+# my $species_2 = "plantB";#"arabidopsis thaliana";
 
-my $db_1 = "vitis_vinifera_core_29_82_3";
-my $db_2 = "arabidopsis_thaliana_core_29_82_10";
+my $species_1 = "Niben 101";
+my $species_2 = "Arabidopsis TAIR10";
 
-#How much upstream sequence to take
-my $sequence_length = 2000;
-#Window size for seaweeds algorithm
-my $window_size = 60;
+$species_1 =~ s/\s//g; # remove any spaces in name
+$species_2 =~ s/\s//g;
 
-my $pseudo_orthologs = 0; # 1=TRUE
+my @species_list = ($species_1, $species_2);
+
+# Default Parameters
+my $sequence_length = 2000;#How much upstream sequence to take
+my $window_size = 60;#Window size for seaweeds algorithm
+my $pseudo_orthologs = 0;
 
 GetOptions(
     'slength|l=i' => \$sequence_length,
@@ -65,26 +87,47 @@ GetOptions(
     'pseudo|p' => \$pseudo_orthologs,
     ) or die "Usage: $0 --slength INTEGER([2000], 500, 5000) --wsize INTEGER([60], 30, 80, 100) --pseudo\n";
 
-my $outfile_fn = "../output/conservation_result_wB_" . substr($db_1, 0, 2) . "_" . substr($db_2, 0, 2) .( $pseudo_orthologs ? "_ps" : "") . "_long.txt";
-# my $outfile_fn = "../output/conservation_result_wB_pd_two_species_plantV_plantA_long.txt";
-open my $outfile, ">$outfile_fn";
+my $fn_output = "../outputs/conservation_result_wB_" . substr($species_1, 0, 6) . "_" . substr($species_2, 0, 6) . ( $pseudo_orthologs ? "_pseudo" : "") . ".txt";
+# my $fn_output = "../output/conservation_result_wB_pd_two_species_plantV_plantA_long.txt";
+open my $outfile, ">$fn_output";
 
-#<=== LOAD RBHS ===>#
-my %rbhs = ();
 
+
+#<=== PART 2: Load Inputs ===>#
+
+#<=== Load RBH Data ===>#
 # my $rbh_file = "../output/rbhSearchForked_result_plantV_plantA.txt"; # short version
-my $rbh_file = "../output/rbhSearchForked_result_Vitis_vinifera_Arabidopsis_thaliana.txt"; # long version
-open my $rbhs_data, "<$rbh_file", or die "\nError: Could not open rbh file";
-$_ = <$rbhs_data>;
-while(<$rbhs_data>)
-{
-    chomp;
-    my @split = split(/\t/);
-    # push(@{$rbhs{$split[0]}}, $split[1]);
-    $rbhs{$split[3]} = $split[2];
+
+my %rbhs;
+my $fn_rbh = "../inputs/rbhSearch_result_$species_1\_$species_2.txt";
+
+open(my $fh, '<', $fn_rbh) or die "Could not open file '$fn_rbh'. \n$!";
+while (my $line = <$fh>) {
+    chomp $line;
+    my @array = split(/\t/, $line);
+    next if $#array < 3;
+
+    # There are 4 columns in the rbh output file:
+    #   the 1st and last belong to the first species
+    #   the 2nd and 3rd belong to the second species
+    #   the 1st and 2nd are protein IDs
+    #   the 3rd and last are gene IDs if known, "unknown" otherwise
+    # If any of the gene IDs are "unknown", we try and extract it from the protein ID
+    # by taking a substring before the first ".", if a "." exists in the protein ID
+    foreach my $ii (2..3) {
+        if ($array[$ii] eq 'unknown') {
+            $array[$ii] = index($array[3-$ii], '.') == -1 ? $array[3-$ii] : substr($array[3-$ii], 0, index($array[3-$ii], '.'));
+        }
+    }
+    # $array[2] = $array[2] eq 'unknown' ? substr($array[1], 0, index($array[1], '.')) : $array[2] ;
+    # $array[3] = $array[3] eq 'unknown' ? substr($array[0], 0, index($array[0], '.')) : $array[3] ;
+
+    # print "2: $array[2], 3: $array[3] \n";
+
+    $rbhs{$array[3]} = $array[2];
 }
-close $rbhs_data;
-# print Dumper (%rbhs);
+close $fh;
+
 #<== SET PSEUDO ORTHOLOGS ==>#
 if($pseudo_orthologs)
 {
@@ -113,17 +156,77 @@ if($pseudo_orthologs)
 # print Dumper (%rbhs);
 # exit;
 
-#<=== GET GENES ===>#
-my $local_db = get_sequence_database("ensembl_local");
+#<=== Load Sequence Location Data ===>#
 
-my @species_1_genes = @{$local_db->get_all_accessions($species_1)};
-my @species_2_genes = @{$local_db->get_all_accessions($species_2)};
+my %sequence_info_lookup; # e.g. $sequence_info_lookup{"Niben101_Niben101Scf10386g00010"}[1]
+my %all_geneids; # e.g. $all_geneids{"Niben101"} gives you all the gene IDs of Niben101
+my %db_fasta;
+
+foreach my $species (@species_list) {
+
+    my $fn_main = "../inputs/$species.bed";
+    my $fn_utr5 = "../inputs/$species\_utr5.bed";
+    my $fn_utr3 = "../inputs/$species\_utr3.bed";
+
+    my $fn_fasta = "../inputs/$species.fa";
+
+    my $fh;
+
+    open($fh, '<', $fn_main) or die "Could not open file '$fn_main' \n$!";
+    while (my $line = <$fh>) {
+        chomp $line;
+        my @array = split(" ", $line);
+        next if $#array < LASTCOLUMN;
+
+        $sequence_info_lookup{$species . "_" . $array[GENEID]} = \@array;
+
+        push @{ $all_geneids{$species} }, $array[GENEID];
+
+    }
+    close $fh;
+
+    open($fh, '<', $fn_utr5) or die "Could not open file '$fn_utr5' \n$!";
+    while (my $line = <$fh>) {
+        chomp $line;
+        my @array = split(" ", $line);
+        next if $#array < LASTCOLUMN;
+
+        $sequence_info_lookup{$species . "_" . $array[GENEID]}[FIVESTART] = $array[SEQSTART];
+        $sequence_info_lookup{$species . "_" . $array[GENEID]}[FIVEEND] = $array[SEQEND];
+
+    }
+    close $fh;
+
+    open($fh, '<', $fn_utr3) or die "Could not open file '$fn_utr3' \n$!";
+    while (my $line = <$fh>) {
+        chomp $line;
+        my @array = split(" ", $line);
+        next if $#array < LASTCOLUMN;
+
+        $sequence_info_lookup{$species . "_" . $array[GENEID]}[THREESTART] = $array[SEQSTART];
+        $sequence_info_lookup{$species . "_" . $array[GENEID]}[THREEEND] = $array[SEQEND];
+
+    }
+    close $fh;
+
+    $db_fasta{$species} = Bio::DB::Fasta->new($fn_fasta);
+}
+
+# #<=== GET GENES ===>#
+# my $local_db = get_sequence_database("ensembl_local");
+
+# my @species_1_genes = @{$local_db->get_all_accessions($species_1)};
+# my @species_2_genes = @{$local_db->get_all_accessions($species_2)};
+
+my @species_1_genes = @{$all_geneids{$species_1}};
+my @species_2_genes = @{$all_geneids{$species_2}};
+
 
 #<=== BEGIN CONSERVATION SEARCH ===>#
 #Go through all S1 genes
 
-my $start_id = "AT3G01850";
-my $begin = 1; # 0 to begin with the gene specified in $start_id, 1 otherwise.
+# my $start_id = "AT3G01850";
+# my $begin = 1; # 0 to begin with the gene specified in $start_id, 1 otherwise.
 
 my $total = scalar @species_1_genes;
 my $count = 0;
@@ -132,13 +235,13 @@ foreach my $s1_gene_accession (@species_1_genes)
 {
     $count++;
 
-    if($s1_gene_accession eq $start_id)
-    {
-        $begin = 1;
-    }
+    # if($s1_gene_accession eq $start_id)
+    # {
+    #     $begin = 1;
+    # }
     
-    if($begin)
-    {
+    # if($begin)
+    # {
         # print $rbhs{$s1_gene_accession} . "\n";
         # foreach my $s2_gene_accession (@{$rbhs{$s1_gene_accession}})
         if(defined($rbhs{$s1_gene_accession}) && $rbhs{$s1_gene_accession} ne "none")
@@ -149,67 +252,74 @@ foreach my $s1_gene_accession (@species_1_genes)
             
             #Now we have to check if we can take the sequence we want to take
             #So, get the sequences
-            my $gene_1_sequence = $local_db->get_gene_sequence_by_accession($species_1, $s1_gene_accession);
-            my $gene_2_sequence = $local_db->get_gene_sequence_by_accession($species_2, $s2_gene_accession);
+            # my $gene_1_sequence = $local_db->get_gene_sequence_by_accession($species_1, $s1_gene_accession);
+            # my $gene_2_sequence = $local_db->get_gene_sequence_by_accession($species_2, $s2_gene_accession);
+
+            # #        print Dumper($gene_2_sequence);
+            # #Where do they start on the chromosome?
+            # #Positive strand error fixing (some genes start at the beginning of chromosomes)
+            # my $gene_1_start = $sequence_length;
+            # my $gene_2_start = $sequence_length;
+            # my $g1_real_start;
+            # my $g2_real_start;
+            # my $g1_strand = $gene_1_sequence->[0]->{"strand"};
+            # my $g2_strand = $gene_2_sequence->[0]->{"strand"};
             
-            #        print Dumper($gene_2_sequence);
-            #Where do they start on the chromosome?
-            #Positive strand error fixing (some genes start at the beginning of chromosomes)
-            my $gene_1_start = $sequence_length;
-            my $gene_2_start = $sequence_length;
-            my $g1_real_start;
-            my $g2_real_start;
-            my $g1_strand = $gene_1_sequence->[0]->{"strand"};
-            my $g2_strand = $gene_2_sequence->[0]->{"strand"};
+            # $gene_1_start = $gene_1_sequence->[0]->{"five_prime_pos"};
+            # $gene_2_start = $gene_2_sequence->[0]->{"five_prime_pos"};
             
-            $gene_1_start = $gene_1_sequence->[0]->{"five_prime_pos"};
-            $gene_2_start = $gene_2_sequence->[0]->{"five_prime_pos"};
+            # $g1_real_start = $gene_1_sequence->[0]->{"five_prime_pos"};
+            # $g2_real_start = $gene_2_sequence->[0]->{"five_prime_pos"};
             
-            $g1_real_start = $gene_1_sequence->[0]->{"five_prime_pos"};
-            $g2_real_start = $gene_2_sequence->[0]->{"five_prime_pos"};
+            # #Upstream sequence length defaults
+            # my $species_1_length = $sequence_length;
+            # my $species_2_length = $sequence_length;
             
-            #Upstream sequence length defaults
-            my $species_1_length = $sequence_length;
-            my $species_2_length = $sequence_length;
+            # #If we can't physically take that length of sequence, then we need to cut it down
+            # if($gene_1_start < $species_1_length){
+            #     $species_1_length = $gene_1_start;
+            # }
+            # if($gene_2_start < $species_2_length){
+            #     $species_2_length = $gene_2_start;
+            # }
             
-            #If we can't physically take that length of sequence, then we need to cut it down
-            if($gene_1_start < $species_1_length){
-                $species_1_length = $gene_1_start;
-            }
-            if($gene_2_start < $species_2_length){
-                $species_2_length = $gene_2_start;
-            }
+            # #Take both of the upstream sequences
+            # my $species_1_sequence = $local_db->get_sequence_by_location(
+            #     Sequences::Database::Relative_Location->new(
+            #         identifier => $s1_gene_accession,
+            #         offset => - $species_1_length,
+            #         'length' => $species_1_length,
+            #         stop_at_neighbours => 1,
+            #         'anchor' => "5' end"
+            #     )
+            # );
             
-            #Take both of the upstream sequences
-            my $species_1_sequence = $local_db->get_sequence_by_location(
-                Sequences::Database::Relative_Location->new(
-                    identifier => $s1_gene_accession,
-                    offset => - $species_1_length,
-                    'length' => $species_1_length,
-                    stop_at_neighbours => 1,
-                    'anchor' => "5' end"
-                )
-            );
+            # my $species_2_sequence = $local_db->get_sequence_by_location
+            # (
+            #     Sequences::Database::Relative_Location->new
+            #     (
+            #         identifier => $s2_gene_accession,
+            #         offset => - $species_2_length,
+            #         'length' => $species_2_length,
+            #         stop_at_neighbours => 1,
+            #         'anchor' => "5' end"
+            #     )
+            # );
             
-            my $species_2_sequence = $local_db->get_sequence_by_location
-            (
-                Sequences::Database::Relative_Location->new
-                (
-                    identifier => $s2_gene_accession,
-                    offset => - $species_2_length,
-                    'length' => $species_2_length,
-                    stop_at_neighbours => 1,
-                    'anchor' => "5' end"
-                )
-            );
-            
+            my $species_1_sequence = $db_fasta{$species_1}->seq($s1_gene_accession);
+            my $species_2_sequence = $db_fasta{$species_2}->seq($s2_gene_accession);
+
             #Both sequences must be above or equal to the window size
-            if(length($species_1_sequence->[0]->seq) >= $window_size && length($species_2_sequence->[0]->seq) >= $window_size)
+            # if(length($species_1_sequence->[0]->seq) >= $window_size && length($species_2_sequence->[0]->seq) >= $window_size)
+            if( length($species_1_sequence) >= $window_size &&
+                length($species_2_sequence) >= $window_size &&
+                $species_1_sequence ne "" &&
+                $species_2_sequence ne "")
             {
                 #Remove IUPAC codes
-                my $sequence_one = $species_1_sequence->[0]->seq;
+                my $sequence_one = $species_1_sequence;
                 $sequence_one =~ s/[^ATCG]/N/g;
-                my $sequence_two = $species_2_sequence->[0]->seq;
+                my $sequence_two = $species_2_sequence;
                 $sequence_two =~ s/[^ATCG]/N/g;
 
                 #If we're ready to conduct the conservation analysis, then...
@@ -231,22 +341,22 @@ foreach my $s1_gene_accession (@species_1_genes)
                         windowsize => $window_size,
                     );
 
-                my @db_handles;
-                # my $ensembl_registry = 'Bio::EnsEMBL::Registry';
-                my $ensembl_registry = $local_db->{"registry"};
-                # print Dumper($local_db);
+                # my @db_handles;
+                # # my $ensembl_registry = 'Bio::EnsEMBL::Registry';
+                # my $ensembl_registry = $local_db->{"registry"};
+                # # print Dumper($local_db);
                 
-                my @db_adaptors = @{ $ensembl_registry->get_all_DBAdaptors() };
-                foreach my $db_adaptor (@db_adaptors) {
-                    # print "db_adaptor: " . Dumper($db_adaptor);
-                    my $db_connection = $db_adaptor->dbc();
-                    # push @db_handles, $db_connection->db_handle();
-                    $job->add_handle($db_connection->db_handle());
+                # my @db_adaptors = @{ $ensembl_registry->get_all_DBAdaptors() };
+                # foreach my $db_adaptor (@db_adaptors) {
+                #     # print "db_adaptor: " . Dumper($db_adaptor);
+                #     my $db_connection = $db_adaptor->dbc();
+                #     # push @db_handles, $db_connection->db_handle();
+                #     $job->add_handle($db_connection->db_handle());
 
-                    # push @db_handles, $db_connection->db_handle();
-                    # print "script: $db_connection->db_handle()". Dumper($db_connection->db_handle()) . "\n";
-                }
-                # print "db_handles:" . Dumper (@db_handles);
+                #     # push @db_handles, $db_connection->db_handle();
+                #     # print "script: $db_connection->db_handle()". Dumper($db_connection->db_handle()) . "\n";
+                # }
+                # # print "db_handles:" . Dumper (@db_handles);
 
                 
                 #And run the job
@@ -270,29 +380,58 @@ foreach my $s1_gene_accession (@species_1_genes)
                 push(@{$alignment_results}, convert_gs_seaweed_result_to_ap($result->plot));
                 
                 #<==Bundling==>#
-                my $rdb1 = Ensembl_Database_Parameters->new(
-                        "dbname" => $db_1,
+                # my $rdb1 = Ensembl_Database_Parameters->new(
+                #         "dbname" => $db_1,
+                #         "alias" => $species_1,
+                #         "location" => "local",
+                #     );
+                
+                # my $rdb2 = Ensembl_Database_Parameters->new(
+                #         "dbname" => $db_2,
+                #         "alias" => $species_2,
+                #         "location" => "local",
+                #     );
+
+                my $rdb1 = FASTA_Sequence_Database_Parameters->new(
+                        "dbname" => "no_dbname",
+                        "filename" => File::Spec->rel2abs("../inputs/$species_1\_full.fa"),
                         "alias" => $species_1,
                         "location" => "local",
+                        "natural_species_name" => $species_1,
                     );
                 
-                my $rdb2 = Ensembl_Database_Parameters->new(
-                        "dbname" => $db_2,
+                my $rdb2 = FASTA_Sequence_Database_Parameters->new(
+                        "dbname" => "no_dbname",
+                        "filename" => File::Spec->rel2abs("../inputs/$species_2\_full.fa"),
                         "alias" => $species_2,
                         "location" => "local",
+                        "natural_species_name" => $species_2,
                     );
                 
                 #Get sequence information for the genomic intervals
-                my ($g1_region, $g1_coordsys) = $local_db->get_gene_information_by_accession($species_1, $s1_gene_accession);
-                my ($g2_region, $g2_coordsys) = $local_db->get_gene_information_by_accession($species_2, $s2_gene_accession);
+                # my ($g1_region, $g1_coordsys) = $local_db->get_gene_information_by_accession($species_1, $s1_gene_accession);
+                # my ($g2_region, $g2_coordsys) = $local_db->get_gene_information_by_accession($species_2, $s2_gene_accession);
                 
-                my $g1_5prime = $species_1_sequence->[0]->{"five_prime_pos"};
-                my $g1_3prime = $species_1_sequence->[0]->{"three_prime_pos"};
-                my $g1_strand = $species_1_sequence->[0]->{"strand"};
+                my $g1_region = $sequence_info_lookup{$species_1 . "_" . $s1_gene_accession}[CHROMID];
+                my $g1_coordsys = "not_in_use"; # chromosome, scaffold, contig
+                my $g2_region = $sequence_info_lookup{$species_2 . "_" . $s2_gene_accession}[CHROMID];
+                my $g2_coordsys = "not_in_use";
+
+                # my $g1_5prime = $species_1_sequence->[0]->{"five_prime_pos"};
+                # my $g1_3prime = $species_1_sequence->[0]->{"three_prime_pos"};
+                # my $g1_strand = $species_1_sequence->[0]->{"strand"};
                 
-                my $g2_5prime = $species_2_sequence->[0]->{"five_prime_pos"};
-                my $g2_3prime = $species_2_sequence->[0]->{"three_prime_pos"};
-                my $g2_strand = $species_2_sequence->[0]->{"strand"};
+                # my $g2_5prime = $species_2_sequence->[0]->{"five_prime_pos"};
+                # my $g2_3prime = $species_2_sequence->[0]->{"three_prime_pos"};
+                # my $g2_strand = $species_2_sequence->[0]->{"strand"};
+
+                my $g1_5prime = $sequence_info_lookup{$species_1 . "_" . $s1_gene_accession}[FIVESTART];
+                my $g1_3prime = $sequence_info_lookup{$species_1 . "_" . $s1_gene_accession}[THREEEND];
+                my $g1_strand = $sequence_info_lookup{$species_1 . "_" . $s1_gene_accession}[DIRECTION];
+                
+                my $g2_5prime = $sequence_info_lookup{$species_2 . "_" . $s2_gene_accession}[FIVESTART];
+                my $g2_3prime = $sequence_info_lookup{$species_2 . "_" . $s2_gene_accession}[THREEEND];
+                my $g2_strand = $sequence_info_lookup{$species_2 . "_" . $s2_gene_accession}[DIRECTION];
                 
                 #Set genomic interval data
                 my $s1_ginterval = Genomic_Interval->new(
@@ -300,14 +439,17 @@ foreach my $s1_gene_accession (@species_1_genes)
                         "region" => $g1_region,
                         "five_prime_pos" => $g1_5prime,
                         "three_prime_pos" => $g1_3prime,
-                        "strand" => $g1_strand,
+                        "strand" => $g1_strand eq '+' ? "positive" : "negative",
                         "working_sequence" => "ref_sequence",
                         "coord_sys_name" => $g1_coordsys,
                     );
                 
                 #Just in case
-                $s1_ginterval->{"gi_sequence"} = $species_1_sequence->[0]->seq;
-                $s1_ginterval->{"gi_sequence_repeatmasked"} = $species_1_sequence->[0]->{"masked_sequence"};
+                # $s1_ginterval->{"gi_sequence"} = $species_1_sequence->[0]->seq;
+                # $s1_ginterval->{"gi_sequence_repeatmasked"} = $species_1_sequence->[0]->{"masked_sequence"};
+
+                $s1_ginterval->{"gi_sequence"} = $species_1_sequence;
+                $s1_ginterval->{"gi_sequence_repeatmasked"} = $species_1_sequence;
                 
                 #Set genomic interval data
                 my $s2_ginterval = Genomic_Interval->new(
@@ -315,14 +457,17 @@ foreach my $s1_gene_accession (@species_1_genes)
                         "region" => $g2_region,
                         "five_prime_pos" => $g2_5prime,
                         "three_prime_pos" => $g2_3prime,
-                        "strand" => $g2_strand,
+                        "strand" => $g2_strand eq '+' ? "positive" : "negative",
                         "working_sequence" => "ref_sequence",
                         "coord_sys_name" => $g2_coordsys,
                     );
                 
                 #Just in case
-                $s2_ginterval->{"gi_sequence"} = $species_2_sequence->[0]->seq;
-                $s2_ginterval->{"gi_sequence_repeatmasked"} = $species_2_sequence->[0]->{"masked_sequence"};
+                # $s2_ginterval->{"gi_sequence"} = $species_2_sequence->[0]->seq;
+                # $s2_ginterval->{"gi_sequence_repeatmasked"} = $species_2_sequence->[0]->{"masked_sequence"};
+
+                $s2_ginterval->{"gi_sequence"} = $species_2_sequence;
+                $s2_ginterval->{"gi_sequence_repeatmasked"} = $species_2_sequence;
                 
                 #Make an interval set for comparison
                 my @arr = ($s2_ginterval);
@@ -382,10 +527,10 @@ foreach my $s1_gene_accession (@species_1_genes)
                 print $outfile $s2_gene_accession . "\n";
                 print $outfile $g1_strand . "\n";
                 print $outfile $g2_strand . "\n";
-                print $outfile $g1_real_start . "\n";
-                print $outfile $g2_real_start . "\n";
-                print $outfile $species_1_sequence->[0]->seq . "\n";
-                print $outfile $species_2_sequence->[0]->seq . "\n";
+                print $outfile '$g1_real_start' . "\n";
+                print $outfile '$g2_real_start' . "\n";
+                print $outfile $species_1_sequence . "\n";
+                print $outfile $species_2_sequence . "\n";
                 print $outfile $alignmax . "\n";
                 print $outfile "--RemoStart\n";
                 foreach my $remo_set (@remo_sets)
@@ -419,5 +564,5 @@ foreach my $s1_gene_accession (@species_1_genes)
             #print "\n" . Dumper($species_1_sequence->[0]->seq);
             #exit;
         }
-    }
+    # }
 }

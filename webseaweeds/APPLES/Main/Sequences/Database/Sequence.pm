@@ -114,9 +114,9 @@ sub get_sequence_by_location {
 
 	if ( !defined($r) ) {
 		info( "Getting sequence " . $loc->identifier . " from DB." );
-		print "\nSequence.pm line 117. get_sequence_by_location, call _get_sequence_by_location, Getting sequence " . $loc->identifier . " from DB.\n";
+		# print "\nSequence.pm line 117. get_sequence_by_location, call _get_sequence_by_location, Getting sequence " . $loc->identifier . " from DB.\n";
 		$r = $self->_get_sequence_by_location( $loc, );
-		print "\nSequence.pm line 119. get_sequence_by_location, returned from _get_sequence_by_location.\n";
+		# print "\nSequence.pm line 119. get_sequence_by_location, returned from _get_sequence_by_location.\n";
 		if (UNIVERSAL::can ($self, "get_meta_data")) {
 			$r->{metadata} = $self->get_meta_data ($loc->identifier);
 		}
@@ -143,7 +143,7 @@ sub get_sequence_by_location {
 			push @result, $r;
 		}
 	}
-	print "\nSequence.pm line 146. get_sequence_by_location, exiting.\n";
+	# print "\nSequence.pm line 146. get_sequence_by_location, exiting.\n";
 	return \@result;
 }
 

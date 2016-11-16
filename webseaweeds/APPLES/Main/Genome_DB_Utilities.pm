@@ -3077,10 +3077,10 @@ method private_get_id_and_distance_of_neighbouring_genbank_gene (Reg_Loc $reg_lo
       my $min = $GU->minimum(\@bothcoordinates);
       my $max = $GU->maximum(\@bothcoordinates);
       if ($min<1) {
-	  die 'invalid coordinate';
+	  die 'invalid ($min<1) coordinate';
       }
       if ($max>length($string)) {
-	  die 'invalid coordinate';
+	  die 'invalid ($max>length($string)) coordinate';
       }
       my $substring = substr($string,$min,($max-$min)+1);
       if ($strand eq 'negative') { 

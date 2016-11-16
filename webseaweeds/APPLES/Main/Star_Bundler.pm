@@ -25,20 +25,20 @@ class Star_Bundler {
     method truncated_bundle (Genomic_Interval $centre_gi, Genomic_Interval_Set $gi_set_for_comparison, ReMo_Set_Phylogenetic_Constructor_Parameters $parameters, ArrayRef $alignment_results)    {
         
         #Make GI set
-        print "Star_Bundler line 28.\n";
+        # print "Star_Bundler line 28.\n";
         push (my @combined_gi_array, $centre_gi);
-        print "Star_Bundler line 30.\n";
+        # print "Star_Bundler line 30.\n";
         push (@combined_gi_array, @{$gi_set_for_comparison->{genomic_interval_set}});
-        print "Star_Bundler line 32.\n";
+        # print "Star_Bundler line 32.\n";
         my $gi_set = Genomic_Interval_Set->new(genomic_interval_set => \@combined_gi_array);
-        print "Star_Bundler line 34.\n";
+        # print "Star_Bundler line 34.\n";
         #Get remo datalist
         my @remo_datalist = $self->get_truncated_datalist($parameters, $gi_set, $alignment_results);
-        print "Star_Bundler line 37.\n";
+        # print "Star_Bundler line 37.\n";
         my @single_bundles = $self->private_do_bundling(\@remo_datalist, $parameters->star_bundler_parameters, $gi_set);
-        print "Star_Bundler line 39.\n";
+        # print "Star_Bundler line 39.\n";
         my @remo_sets = $self->private_turn_bundles_into_remo_sets(\@single_bundles, \@remo_datalist, $gi_set);
-        print "Star_Bundler line 41.\n";
+        # print "Star_Bundler line 41.\n";
         return @remo_sets;
     }
     
@@ -623,6 +623,14 @@ class Star_Bundler {
             $B = 100;
         }
 	elsif ($secondspecies eq "medicago truncatula") {
+            $A = 78;
+            $B = 100;
+        }
+	elsif ($secondspecies eq "ArabidopsisTAIR10") {
+            $A = 78;
+            $B = 100;
+        }
+	elsif ($secondspecies eq "Niben101") {
             $A = 78;
             $B = 100;
         }
