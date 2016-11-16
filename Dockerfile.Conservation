@@ -32,5 +32,11 @@ RUN wget https://www.python.org/ftp/python/3.4.5/Python-3.4.5.tar.xz \
 RUN  /opt/python3.4/bin/easy_install-3.4 numpy \
  && /opt/python3.4/bin/easy_install-3.4 pandas
 
+# Seaweeds dependencies
+RUN apt-get install -y --no-install-recommends \
+		libtbb-dev \
+		libboost-regex1.48.0 \
+		libboost-program-options1.48.0
+
 # RUN easy_install3 pandas numpy
 # ENTRYPOINT ["bash", "/apples/wrapper_de_rbh.sh"]
