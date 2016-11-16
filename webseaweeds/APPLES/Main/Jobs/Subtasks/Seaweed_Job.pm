@@ -239,124 +239,159 @@ class Jobs::Subtasks::Seaweed_Job extends Jobs::Job {
 			# qx($pe 2>&1);
 		# }
 
-		my @file_suffix = ( "nn" , "nr"); # Todo in the next commit
+		my @file_suffix = ("nn","nr");
+		foreach my $ii (0..1) { # iterate commands
+			# here stuff gets run!
 
-		my $timeout = 10; # seconds, max to wait for seaweed binary to complete
-		# my @db_handles = $self->dbhs();
+			foreach my $jj (1..3){ # iterate attempts
 
-		for (my $i=1; $i<=3; $i++) {
+				eval{
+					local $SIG{ALRM} = sub{ die "alarm_sound\n"};
+					alarm(10*$jj); #seconds
+					# eval{
+						print("Running command (attempt no. $jj): $plot_exec[$ii]\n");
+						qx($plot_exec[$ii] 2>&1);
+					# };
+					alarm(0);
+				};
+				alarm(0); # eliminate race condition, http://docstore.mik.ua/orelly/perl4/cook/ch16_22.htm
 
-			print "Seaweed_Job: Running command 1/2, ($i/3): \n$plot_exec[0]\n";
-
-			my $start_time = time();
-			my $child_pid = fork();
-			die "Could not fork.\n" if not defined $child_pid;
-
-			if (not $child_pid) {
-				# In child
-				# print "Seaweed_Job: db_handles: ". Dumper(@db_handles)."\n";
-				# print Dumper($db_handles[1]);
-				# isa_ok($db_handles[1],'DBI::db');
-				# $db_handles[1]->{"InactiveDestroy"} = 1;
-				# $db_handles[2]->{"InactiveDestroy"} = 1;
-				foreach my $dbh (@{ $self->dbhs }) {
-					print "Seaweed_Job: dbh: " . Dumper($dbh) ."\n";
-					isa_ok($dbh, 'DBI::db');
-					$dbh->{"InactiveDestroy"} = 1;
+				if ($@) {
+					die "Unexpected exit from seaweed" unless $@ eq "alarm_sound\n";
+					print "Timeout (10*$jj secs) called on seaweed\n";
 				}
 
-			print qx($plot_exec[0] 2>&1);
-			print "Seaweed_Job: Child process completed.\n";
-			exit 3; # Child completed.
-
-			} else {
-				# In parent
-				while (1) {
-
-					my $res = waitpid($child_pid, WNOHANG);
-					sleep(0.1);
-
-					if ($res == -1) {
-						print "Error from seaweed binary: ". ($? >> 8) ."\n";
-						last;
-					}
-
-					if ($res) {
-						last;
-					}
-
-					if (time() - $start_time > $timeout) {
-						print "Timeout, killing child pid: $child_pid.\n";
-						kill (SIGKILL, $child_pid); # SIGKILL = 15
-						last;
-					}
+				if (-f "${prefix}_$file_suffix[$ii]\_profile_1" &&
+					-f "${prefix}_$file_suffix[$ii]\_profile_2" &&
+					-f "${prefix}_$file_suffix[$ii]\_result") {
+					print "'$file_suffix[$ii]' output files are ready.\n";
+					last; # iterate attempts
+				} else {
+					print "'$file_suffix[$ii]' output files are not found.\n";
 				}
+
 			}
 
-			sleep $i-1;
-
-			if (-f "${prefix}_nn_profile_1" &&
-					-f "${prefix}_nn_profile_2" &&
-					-f "${prefix}_nn_result") {
-				print "nn output files are ready.\n";
-				last;
-			} else {
-				print "No nn output files, run command again.\n";
-			}
 		}
 
-		for (my $i=1; $i<=3; $i++) {
+		# my @file_suffix = ( "nn" , "nr"); # Todo in the next commit
 
-			print "Seaweed_Job: Running command 2/2, ($i/3): \n$plot_exec[1]\n";
+		# my $timeout = 10; # seconds, max to wait for seaweed binary to complete
+		# # my @db_handles = $self->dbhs();
+
+		# for (my $i=1; $i<=3; $i++) {
+
+		# 	print "Seaweed_Job: Running command 1/2, ($i/3): \n$plot_exec[0]\n";
+
+		# 	my $start_time = time();
+		# 	my $child_pid = fork();
+		# 	die "Could not fork.\n" if not defined $child_pid;
+
+		# 	if (not $child_pid) {
+		# 		# In child
+		# 		# print "Seaweed_Job: db_handles: ". Dumper(@db_handles)."\n";
+		# 		# print Dumper($db_handles[1]);
+		# 		# isa_ok($db_handles[1],'DBI::db');
+		# 		# $db_handles[1]->{"InactiveDestroy"} = 1;
+		# 		# $db_handles[2]->{"InactiveDestroy"} = 1;
+		# 		foreach my $dbh (@{ $self->dbhs }) {
+		# 			print "Seaweed_Job: dbh: " . Dumper($dbh) ."\n";
+		# 			isa_ok($dbh, 'DBI::db');
+		# 			$dbh->{"InactiveDestroy"} = 1;
+		# 		}
+
+		# 	print qx($plot_exec[0] 2>&1);
+		# 	print "Seaweed_Job: Child process completed.\n";
+		# 	exit 3; # Child completed.
+
+		# 	} else {
+		# 		# In parent
+		# 		while (1) {
+
+		# 			my $res = waitpid($child_pid, WNOHANG);
+		# 			sleep(0.1);
+
+		# 			if ($res == -1) {
+		# 				print "Error from seaweed binary: ". ($? >> 8) ."\n";
+		# 				last;
+		# 			}
+
+		# 			if ($res) {
+		# 				last;
+		# 			}
+
+		# 			if (time() - $start_time > $timeout) {
+		# 				print "Timeout, killing child pid: $child_pid.\n";
+		# 				kill (SIGKILL, $child_pid); # SIGKILL = 15
+		# 				last;
+		# 			}
+		# 		}
+		# 	}
+
+		# 	sleep $i-1;
+
+		# 	if (-f "${prefix}_nn_profile_1" &&
+		# 			-f "${prefix}_nn_profile_2" &&
+		# 			-f "${prefix}_nn_result") {
+		# 		print "nn output files are ready.\n";
+		# 		last;
+		# 	} else {
+		# 		print "No nn output files, run command again.\n";
+		# 	}
+		# }
+
+		# for (my $i=1; $i<=3; $i++) {
+
+		# 	print "Seaweed_Job: Running command 2/2, ($i/3): \n$plot_exec[1]\n";
 			
-			my $start_time = time();
-			my $child_pid = fork();
-			die "Could not fork.\n" if not defined $child_pid;
+		# 	my $start_time = time();
+		# 	my $child_pid = fork();
+		# 	die "Could not fork.\n" if not defined $child_pid;
 
-			if (not $child_pid) {
-				# In child
-				foreach my $dbh (@{ $self->dbhs }) {
-					print "Seaweed_Job: dbh: " . Dumper($dbh) ."\n";
-					isa_ok($dbh, 'DBI::db');
-					$dbh->{"InactiveDestroy"} = 1;
-				}
+		# 	if (not $child_pid) {
+		# 		# In child
+		# 		foreach my $dbh (@{ $self->dbhs }) {
+		# 			print "Seaweed_Job: dbh: " . Dumper($dbh) ."\n";
+		# 			isa_ok($dbh, 'DBI::db');
+		# 			$dbh->{"InactiveDestroy"} = 1;
+		# 		}
 				
-			print qx($plot_exec[1] 2>&1);
-			exit 3; # Child completed.
+		# 	print qx($plot_exec[1] 2>&1);
+		# 	exit 3; # Child completed.
 
-			} else {
-				# In parent
-				while (1) {
+		# 	} else {
+		# 		# In parent
+		# 		while (1) {
 
-					my $res = waitpid($child_pid, WNOHANG);
-					sleep (0.1);
+		# 			my $res = waitpid($child_pid, WNOHANG);
+		# 			sleep (0.1);
 
-					if ($res == -1) {
-						print "Error from seaweed binary: ". ($? >> 8) ."\n";
-						last;
-					}
-					if ($res) {
-						last;
-					}
-					if (time() - $start_time > $timeout) {
-						print "Timeout, killing child pid: $child_pid.\n";
-						kill (SIGKILL, $child_pid); # SIGKILL = 15
-						last;
-					}
-				}
-			}
+		# 			if ($res == -1) {
+		# 				print "Error from seaweed binary: ". ($? >> 8) ."\n";
+		# 				last;
+		# 			}
+		# 			if ($res) {
+		# 				last;
+		# 			}
+		# 			if (time() - $start_time > $timeout) {
+		# 				print "Timeout, killing child pid: $child_pid.\n";
+		# 				kill (SIGKILL, $child_pid); # SIGKILL = 15
+		# 				last;
+		# 			}
+		# 		}
+		# 	}
 
-			sleep $i-1;
+		# 	sleep $i-1;
 
-			if (-f "${prefix}_nr_profile_1" &&
-					-f "${prefix}_nr_profile_2" &&
-					-f "${prefix}_nr_result") {
-				print "nr output files are ready.\n";
-				last;
-			} else {
-				print "No nr output files, run command again.\n";
-			}
-		}
+		# 	if (-f "${prefix}_nr_profile_1" &&
+		# 			-f "${prefix}_nr_profile_2" &&
+		# 			-f "${prefix}_nr_result") {
+		# 		print "nr output files are ready.\n";
+		# 		last;
+		# 	} else {
+		# 		print "No nr output files, run command again.\n";
+		# 	}
+		# }
 
         #print "\nReading PROFILE from : ${prefix}";
 		# read profiles and plots
