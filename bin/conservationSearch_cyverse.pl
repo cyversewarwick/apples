@@ -339,6 +339,7 @@ foreach my $s1_gene_accession (@species_1_genes)
                         sequence_1 => $species_1_final,
                         sequence_2 => $species_2_final,
                         windowsize => $window_size,
+                        nprocess => 8,
                     );
 
                 # my @db_handles;

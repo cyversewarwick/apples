@@ -81,6 +81,12 @@ class Jobs::Subtasks::Seaweed_Job extends Jobs::Job {
 					  default       => sub { return 1; },
 	);
 
+	has 'nprocess' => (
+					  is            => "rw",
+					  isa           => "Int",
+					  documentation => 'Number of processes for seaweed',
+					  default       => sub { return 8; },
+	);
 =head2 Overloaded validate method
 
 =cut
@@ -111,6 +117,7 @@ class Jobs::Subtasks::Seaweed_Job extends Jobs::Job {
 		my $primary_stepsize   = $self->step_1();
 		my $secondary_stepsize = $self->step_2();
 		my $windowlength       = $self->windowsize();
+		my $nprocess		= $self->nprocess();
 
 		my $primary_size   = length( $primary->seq );
 		my $secondary_size = length( $secondary->seq );
@@ -190,7 +197,8 @@ class Jobs::Subtasks::Seaweed_Job extends Jobs::Job {
 
 		my $code_parameters =
 		    "-w $windowlength "
-		  . "-m seaweednw ";
+		  . "-m seaweednw "
+		  . "-p $nprocess";
 
 		## compare both forward and reverse strands.
 		## the only direction we don't need to compare are
