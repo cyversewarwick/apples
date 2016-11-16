@@ -10,9 +10,9 @@ use lib "../webseaweeds/";
 
 # This is the ORANGES Loader for APPLES. Go fruit.
 BEGIN {
-	use Configuration::AppleSeeds;
-	Configuration::AppleSeeds::load_APPLES();
-	1;
+    use Configuration::AppleSeeds;
+    Configuration::AppleSeeds::load_APPLES();
+    1;
 }
 
 #General
@@ -449,8 +449,8 @@ foreach my $s1_gene_accession (@species_1_genes)
                 # $s1_ginterval->{"gi_sequence"} = $species_1_sequence->[0]->seq;
                 # $s1_ginterval->{"gi_sequence_repeatmasked"} = $species_1_sequence->[0]->{"masked_sequence"};
 
-                $s1_ginterval->{"gi_sequence"} = $species_1_sequence;
-                $s1_ginterval->{"gi_sequence_repeatmasked"} = $species_1_sequence;
+                $s1_ginterval->{"gi_sequence"} = $sequence_one;
+                $s1_ginterval->{"gi_sequence_repeatmasked"} = $sequence_one;
                 
                 #Set genomic interval data
                 my $s2_ginterval = Genomic_Interval->new(
@@ -467,8 +467,8 @@ foreach my $s1_gene_accession (@species_1_genes)
                 # $s2_ginterval->{"gi_sequence"} = $species_2_sequence->[0]->seq;
                 # $s2_ginterval->{"gi_sequence_repeatmasked"} = $species_2_sequence->[0]->{"masked_sequence"};
 
-                $s2_ginterval->{"gi_sequence"} = $species_2_sequence;
-                $s2_ginterval->{"gi_sequence_repeatmasked"} = $species_2_sequence;
+                $s2_ginterval->{"gi_sequence"} = $sequence_two;
+                $s2_ginterval->{"gi_sequence_repeatmasked"} = $sequence_two;
                 
                 #Make an interval set for comparison
                 my @arr = ($s2_ginterval);
