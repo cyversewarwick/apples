@@ -1,0 +1,56 @@
+# cache.dat
+
+# "cache_save" settings are REQUIRED
+
+# The old APPLES docs said this:
+# ONLY this db will be used to store your results
+#
+# Things are a little different now.
+# The name cache_save is used for compatibility reasons, we don't
+# actually support multiple caches anymore. In Cache.pm, one of the
+# following will be used. It is therefore best to only specify one
+# cache server. Also, should you decide to name the cache differently,
+# don't name them starting with 'db_...', since this is used by
+# Cache.pm to detect the case when the settings are not actually
+# stored in a section.
+#
+# If all that is too complicated, uncomment the next line to
+# disable shared caching. However, note that then
+#  a) other users won't be able to re-use your computational
+#     results
+#  b) your computations may take longer, as you can't re-use
+#     things pre-computed by others, or by yourself.
+
+#disable_caching = 1
+
+# you can also disable cache reads, this is to update cache
+# entries incrementally in case you have changed what you need
+# to store in an individual type entry, but do not want to
+# overwrite the whole cache.
+# to enable write only access, set cache_writeonly to anything
+# but 0
+
+# cache_writeonly = 1
+
+# equivalently, you can have a readonly cache, which will not
+# be updated with new values (for experimental computations)
+# to enable read only access, set cache_readonly to anything
+# but 0
+	cache_readonly =  1
+
+<cache_file>
+driver = file
+directory = /var/webservices/webseaweeds/cache
+</cache_file>
+
+#<cache_save>
+#driver = dbi
+# The following values will be used to connect to a DBIx::Simple database
+#db_engine = mysql
+#db_name = apples_cache
+#db_server = 127.0.0.1
+#db_username = ensembl
+#db_password = ens3mbl
+# this will be used as a prefix for CHI
+#db_cache_table = apples_cache
+#</cache_save>
