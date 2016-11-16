@@ -363,9 +363,9 @@ foreach my $s1_gene_accession (@species_1_genes)
                 #And run the job
                 my $result = $job->run;
 
-                print "\nConservation script two species, removing temporary files.\n";
-                unlink glob "'./tempfiles/*'";
-                print "\nConservation script two species, seaweed tempfiles removed.\n";
+                # print "\nConservation script two species, removing temporary files.\n";
+                # unlink glob "'./tempfiles/*'";
+                # print "\nConservation script two species, seaweed tempfiles removed.\n";
                 
                 #What is the max alignment value for this run of seaweeds?
                 my $alignmax = 0;
