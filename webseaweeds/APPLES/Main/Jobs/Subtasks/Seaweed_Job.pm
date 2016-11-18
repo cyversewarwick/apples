@@ -27,6 +27,8 @@ class Jobs::Subtasks::Seaweed_Job extends Jobs::Job {
 
 	use Data::Dumper;
 
+	use IPC::Open2;
+
 	require Datatypes::Results::Alignment_Plot;
 
 	has 'sequence_1' => (
@@ -253,12 +255,25 @@ class Jobs::Subtasks::Seaweed_Job extends Jobs::Job {
 
 			foreach my $jj (1..3){ # iterate attempts
 
+				my $chld_pid;
+				my $alarm_length = 10; #seconds
+
 				eval{
 					local $SIG{ALRM} = sub{ die "alarm_sound\n"};
-					alarm(10*$jj); #seconds
+					alarm($alarm_length*$jj); #seconds
 					# eval{
 						print("Running command (attempt no. $jj): $plot_exec[$ii]\n");
-						qx($plot_exec[$ii] 2>&1);
+
+						# Two ways to run this
+						# 1. with qx, need to make sure kill with a system command like `pkill`
+						# my $sw_stdout = qx($plot_exec[$ii] 2>&1);
+						# print("STDOUT from seaweed:[\n$sw_stdout\n]\n");
+
+						# 2. with open2 which returns the `pid` for killing
+						my($chld_out, $chld_in);
+						$chld_pid = open2($chld_out,$chld_in, "$plot_exec[$ii]");
+						print("STDOUT from Seaweed: [" . $chld_out->print . "\n]\n");
+						waitpid($chld_pid, 0);
 					# };
 					alarm(0);
 				};
@@ -266,7 +281,17 @@ class Jobs::Subtasks::Seaweed_Job extends Jobs::Job {
 
 				if ($@) {
 					die "Unexpected exit from seaweed" unless $@ eq "alarm_sound\n";
-					print "Timeout (10*$jj secs) called on seaweed\n";
+					print "Timeout ($alarm_length*$jj secs) called on seaweed\n";
+
+					# 1. continued
+                	# $stdout_kill = qx("pkill $executable_name" 2>&1);
+                	# print "Return from pkill is '$stdout_kill'.\n";
+
+                	# 2. continued
+					kill (SIGKILL, $chld_pid); # SIGKILL = 9 (nuke), SIGTERM = 15 (socialism)
+
+					#die "timeout, did I kill it?";
+
 				}
 
 				if (-f "${prefix}_$file_suffix[$ii]\_profile_1" &&
@@ -383,7 +408,7 @@ class Jobs::Subtasks::Seaweed_Job extends Jobs::Job {
 		# 			}
 		# 			if (time() - $start_time > $timeout) {
 		# 				print "Timeout, killing child pid: $child_pid.\n";
-		# 				kill (SIGKILL, $child_pid); # SIGKILL = 15
+		# 				kill (SIGKILL, $child_pid); # SIGKILL = 9
 		# 				last;
 		# 			}
 		# 		}
