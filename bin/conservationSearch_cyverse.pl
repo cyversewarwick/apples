@@ -363,6 +363,8 @@ foreach my $s1_gene_accession (@species_1_genes)
                 #And run the job
                 my $result = $job->run;
 
+                system('killall -9 AlignmentPlot_posix_default_release');
+
                 # print "\nConservation script two species, removing temporary files.\n";
                 # unlink glob "'./tempfiles/*'";
                 # print "\nConservation script two species, seaweed tempfiles removed.\n";
