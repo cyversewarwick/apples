@@ -225,8 +225,8 @@ my @species_2_genes = @{$all_geneids{$species_2}};
 #<=== BEGIN CONSERVATION SEARCH ===>#
 #Go through all S1 genes
 
-# my $start_id = "AT3G01850";
-# my $begin = 1; # 0 to begin with the gene specified in $start_id, 1 otherwise.
+my $start_id = "Niben101Scf02104g00001";
+my $begin = 0; # 0 to begin with the gene specified in $start_id, 1 otherwise.
 
 my $total = scalar @species_1_genes;
 my $count = 0;
@@ -235,13 +235,13 @@ foreach my $s1_gene_accession (@species_1_genes)
 {
     $count++;
 
-    # if($s1_gene_accession eq $start_id)
-    # {
-    #     $begin = 1;
-    # }
+    if($s1_gene_accession eq $start_id)
+    {
+        $begin = 1;
+    }
     
-    # if($begin)
-    # {
+    if($begin)
+    {
         # print $rbhs{$s1_gene_accession} . "\n";
         # foreach my $s2_gene_accession (@{$rbhs{$s1_gene_accession}})
         if(defined($rbhs{$s1_gene_accession}) && $rbhs{$s1_gene_accession} ne "none")
@@ -567,5 +567,5 @@ foreach my $s1_gene_accession (@species_1_genes)
             #print "\n" . Dumper($species_1_sequence->[0]->seq);
             #exit;
         }
-    # }
+    }
 }
