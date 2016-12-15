@@ -396,7 +396,7 @@ foreach my $s1_gene_accession (@species_1_genes)
                 #     );
 
                 my $rdb1 = FASTA_Sequence_Database_Parameters->new(
-                        "dbname" => "no_dbname",
+                        "dbname" => "no_dbname1",
                         "filename" => File::Spec->rel2abs("../inputs/$species_1\_full.fa"),
                         "alias" => $species_1,
                         "location" => "local",
@@ -404,7 +404,7 @@ foreach my $s1_gene_accession (@species_1_genes)
                     );
                 
                 my $rdb2 = FASTA_Sequence_Database_Parameters->new(
-                        "dbname" => "no_dbname",
+                        "dbname" => "no_dbname2",
                         "filename" => File::Spec->rel2abs("../inputs/$species_2\_full.fa"),
                         "alias" => $species_2,
                         "location" => "local",
