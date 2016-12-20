@@ -60,6 +60,7 @@ use constant {
     LASTCOLUMN  => 5,
 };
 
+use Time::HiRes qw( time ); # Measures runtime for Seaweed and Star_Bundler
 
 
 #<=== PART 1: Set Parameters ===>#
@@ -88,10 +89,10 @@ GetOptions(
     ) or die "Usage: $0 --slength INTEGER([2000], 500, 5000) --wsize INTEGER([60], 30, 80, 100) --pseudo\n";
 
 my $fn_output = "../outputs/conservation_result_wB_" . substr($species_1, 0, 6) . "_" . substr($species_2, 0, 6) . ( $pseudo_orthologs ? "_pseudo" : "") . ".txt";
+my $fn_log = $fn_output . ".log";
 # my $fn_output = "../output/conservation_result_wB_pd_two_species_plantV_plantA_long.txt";
 open my $outfile, ">$fn_output";
-
-
+open my $logfile, ">$fn_log";
 
 #<=== PART 2: Load Inputs ===>#
 
@@ -226,7 +227,7 @@ my @species_2_genes = @{$all_geneids{$species_2}};
 #Go through all S1 genes
 
 my $start_id = "Niben101Scf02104g00001";
-my $begin = 0; # 0 to begin with the gene specified in $start_id, 1 otherwise.
+my $begin = 1; # 0 to begin with the gene specified in $start_id, 1 otherwise.
 
 my $total = scalar @species_1_genes;
 my $count = 0;
@@ -249,6 +250,10 @@ foreach my $s1_gene_accession (@species_1_genes)
             print "Progress: ". $count . "/" . $total . " s1_gene_accession:" . $s1_gene_accession . "\n";
             #Get the RBH in species 2
             my $s2_gene_accession = $rbhs{$s1_gene_accession};
+            
+            print $logfile "$count/$total";
+            print $logfile "\t$s1_gene_accession(" . $sequence_info_lookup{$species_1 . "_" . $s1_gene_accession}[CHROMID] . ")";
+            print $logfile "\t$s2_gene_accession(" . $sequence_info_lookup{$species_2 . "_" . $s2_gene_accession}[CHROMID] . ")";
             
             #Now we have to check if we can take the sequence we want to take
             #So, get the sequences
@@ -309,6 +314,8 @@ foreach my $s1_gene_accession (@species_1_genes)
             my $species_1_sequence = $db_fasta{$species_1}->seq($s1_gene_accession);
             my $species_2_sequence = $db_fasta{$species_2}->seq($s2_gene_accession);
 
+            print $logfile "\tLen-(". length($species_1_sequence) . "," . length($species_2_sequence) . ")";
+
             #Both sequences must be above or equal to the window size
             # if(length($species_1_sequence->[0]->seq) >= $window_size && length($species_2_sequence->[0]->seq) >= $window_size)
             if( length($species_1_sequence) >= $window_size &&
@@ -361,9 +368,15 @@ foreach my $s1_gene_accession (@species_1_genes)
 
                 
                 #And run the job
+                my $start_seaweed = time();
                 my $result = $job->run;
+                my $end_seaweed = time();
+                printf $logfile "\t[ST%.2f]", $end_seaweed - $start_seaweed ;
 
                 system('killall -9 AlignmentPlot_posix_default_release');
+                if ( $? != -1) {
+                    print $logfile "(kill)";
+                }
 
                 # print "\nConservation script two species, removing temporary files.\n";
                 # unlink glob "'./tempfiles/*'";
@@ -435,7 +448,10 @@ foreach my $s1_gene_accession (@species_1_genes)
                 my $g2_5prime = $sequence_info_lookup{$species_2 . "_" . $s2_gene_accession}[FIVESTART];
                 my $g2_3prime = $sequence_info_lookup{$species_2 . "_" . $s2_gene_accession}[THREEEND];
                 my $g2_strand = $sequence_info_lookup{$species_2 . "_" . $s2_gene_accession}[DIRECTION];
-                
+
+                print $logfile "\tg1(". length($sequence_one) .")$g1_strand\[5:$g1_5prime,3:$g1_3prime]";
+                print $logfile "\tg2(". length($sequence_two) .")$g2_strand\[5:$g2_5prime,3:$g2_3prime]";
+
                 #Set genomic interval data
                 my $s1_ginterval = Genomic_Interval->new(
                         "genome_db" => $rdb1,
@@ -522,8 +538,13 @@ foreach my $s1_gene_accession (@species_1_genes)
                     );
                 
                 my $bundler = Star_Bundler->new();
+
+                my $start_bundler = time();
                 my @remo_sets = $bundler->truncated_bundle($s1_ginterval, $interval_set, $parameters, $alignment_results);
-                
+                my $end_bundler = time();
+
+                printf $logfile "\t[BT%.2f]", $end_bundler - $start_bundler;
+
                 #Print the appropriate output
                 print $outfile "--PairStart\n";
                 print $outfile $s1_gene_accession . "\n";
@@ -566,6 +587,7 @@ foreach my $s1_gene_accession (@species_1_genes)
             #print "\nGen:" . substr($gene_1_sequence->[0]->seq, 0, 10);
             #print "\n" . Dumper($species_1_sequence->[0]->seq);
             #exit;
-        }
-    }
+            print $logfile "\n";
+        } #if(defined($rbhs{$s1_gene_accession}) && $rbhs{$s1_gene_accession} ne "none")
+    } #if($begin)
 }
