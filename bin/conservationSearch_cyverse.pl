@@ -100,7 +100,7 @@ open my $logfile, ">$fn_log";
 # my $rbh_file = "../output/rbhSearchForked_result_plantV_plantA.txt"; # short version
 
 my %rbhs;
-my $fn_rbh = "../inputs/rbhSearch_result_$species_1\_$species_2.txt";
+my $fn_rbh = "../inputs/rbhSearch_result_$species_1\_$species_2\_selected.txt";
 
 open(my $fh, '<', $fn_rbh) or die "Could not open file '$fn_rbh'. \n$!";
 while (my $line = <$fh>) {
@@ -123,9 +123,8 @@ while (my $line = <$fh>) {
     # $array[2] = $array[2] eq 'unknown' ? substr($array[1], 0, index($array[1], '.')) : $array[2] ;
     # $array[3] = $array[3] eq 'unknown' ? substr($array[0], 0, index($array[0], '.')) : $array[3] ;
 
-    # print "2: $array[2], 3: $array[3] \n";
-
-    $rbhs{$array[3]} = $array[2];
+    push @{ $rbhs{$array[3]} }, $array[2];
+    # $rbhs{$array[3]} = $array[2];
 }
 close $fh;
 
@@ -243,13 +242,14 @@ foreach my $s1_gene_accession (@species_1_genes)
     
     if($begin)
     {
-        # print $rbhs{$s1_gene_accession} . "\n";
-        # foreach my $s2_gene_accession (@{$rbhs{$s1_gene_accession}})
-        if(defined($rbhs{$s1_gene_accession}) && $rbhs{$s1_gene_accession} ne "none")
-        {
+        # if( defined($rbhs{$s1_gene_accession}) && $rbhs{$s1_gene_accession} ne "none" ) {
+        if( defined($rbhs{$s1_gene_accession}) ) {
+            foreach my $s2_gene_accession ( @{$rbhs{$s1_gene_accession}} ) {
+        if(  $s2_gene_accession ne "none" ) {
+        
             print "Progress: ". $count . "/" . $total . " s1_gene_accession:" . $s1_gene_accession . "\n";
             #Get the RBH in species 2
-            my $s2_gene_accession = $rbhs{$s1_gene_accession};
+            # my $s2_gene_accession = $rbhs{$s1_gene_accession};
             
             print $logfile "$count/$total";
             print $logfile "\t$s1_gene_accession(" . $sequence_info_lookup{$species_1 . "_" . $s1_gene_accession}[CHROMID] . ")";
@@ -588,6 +588,9 @@ foreach my $s1_gene_accession (@species_1_genes)
             #print "\n" . Dumper($species_1_sequence->[0]->seq);
             #exit;
             print $logfile "\n";
-        } #if(defined($rbhs{$s1_gene_accession}) && $rbhs{$s1_gene_accession} ne "none")
+        } # if(  $s2_gene_accession ne "none" )
+            } #foreach my $s2_gene_accession ( @{$rbhs{$s1_gene_accession}} )
+        } #if(defined($rbhs{$s1_gene_accession}))
+        # } #if(defined($rbhs{$s1_gene_accession}) && $rbhs{$s1_gene_accession} ne "none")
     } #if($begin)
 }
