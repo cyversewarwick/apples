@@ -410,7 +410,7 @@ foreach my $s1_gene_accession (@species_1_genes)
 
                         my $rdb1 = FASTA_Sequence_Database_Parameters->new(
                                 "dbname" => "no_dbname1",
-                                "filename" => File::Spec->rel2abs("../inputs/$species_1\_full.fa"),
+                                "filename" => File::Spec->rel2abs("../inputs/$species_1\.fa"), #_full.fa
                                 "alias" => $species_1,
                                 "location" => "local",
                                 "natural_species_name" => $species_1,
@@ -418,7 +418,7 @@ foreach my $s1_gene_accession (@species_1_genes)
                         
                         my $rdb2 = FASTA_Sequence_Database_Parameters->new(
                                 "dbname" => "no_dbname2",
-                                "filename" => File::Spec->rel2abs("../inputs/$species_2\_full.fa"),
+                                "filename" => File::Spec->rel2abs("../inputs/$species_2\.fa"), #_full.fa
                                 "alias" => $species_2,
                                 "location" => "local",
                                 "natural_species_name" => $species_2,
@@ -428,9 +428,9 @@ foreach my $s1_gene_accession (@species_1_genes)
                         # my ($g1_region, $g1_coordsys) = $local_db->get_gene_information_by_accession($species_1, $s1_gene_accession);
                         # my ($g2_region, $g2_coordsys) = $local_db->get_gene_information_by_accession($species_2, $s2_gene_accession);
                         
-                        my $g1_region = $sequence_info_lookup{$species_1 . "_" . $s1_gene_accession}[CHROMID];
+                        my $g1_region = $sequence_info_lookup{$species_1 . "_" . $s1_gene_accession}[GENEID]; #CHROMID
                         my $g1_coordsys = "not_in_use"; # chromosome, scaffold, contig
-                        my $g2_region = $sequence_info_lookup{$species_2 . "_" . $s2_gene_accession}[CHROMID];
+                        my $g2_region = $sequence_info_lookup{$species_2 . "_" . $s2_gene_accession}[GENEID]; #CHROMID
                         my $g2_coordsys = "not_in_use";
 
                         # my $g1_5prime = $species_1_sequence->[0]->{"five_prime_pos"};
@@ -448,6 +448,11 @@ foreach my $s1_gene_accession (@species_1_genes)
                         my $g2_5prime = $sequence_info_lookup{$species_2 . "_" . $s2_gene_accession}[FIVESTART];
                         my $g2_3prime = $sequence_info_lookup{$species_2 . "_" . $s2_gene_accession}[THREEEND];
                         my $g2_strand = $sequence_info_lookup{$species_2 . "_" . $s2_gene_accession}[DIRECTION];
+
+                        $g1_3prime = $g1_strand eq '+' ? length($sequence_one) : 1;
+                        $g1_5prime = $g1_strand eq '+' ? 1 : length($sequence_one);
+                        $g2_3prime = $g2_strand eq '+' ? length($sequence_two) : 1;
+                        $g2_5prime = $g2_strand eq '+' ? 1 : length($sequence_two);
 
                         print $logfile "\tg1(". length($sequence_one) .")$g1_strand\[5:$g1_5prime,3:$g1_3prime]";
                         print $logfile "\tg2(". length($sequence_two) .")$g2_strand\[5:$g2_5prime,3:$g2_3prime]";
