@@ -1,5 +1,5 @@
 # 
-bin/Configuration/
+#bin/Configuration/
 bin/tempfiles/
 
 BLASTDB
