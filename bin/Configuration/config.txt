@@ -1,0 +1,18 @@
+## Jobservice setup for examples
+
+<jobservice_config>
+### use this for local execution (debugging, etc)
+
+type local
+datadir = ./
+
+### use this for remote job execution
+#
+##type remote
+##url http://localhost/webseaweeds
+##user <your username here!>
+##password <your password here!>
+## http_user ...
+## http_password
+#
+</jobservice_config>
