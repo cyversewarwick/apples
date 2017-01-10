@@ -125,6 +125,14 @@ RUN apt-get install -y --no-install-recommends \
         libboost-regex1.48.0 \
         libboost-program-options1.48.0
 
+# D. Patches
+
+# D1.   Install a missing module
+#       Since release 1.7.0 Bio::Perl removed Bio::SearchIO::blastxml
+#       So we have to install this mobule (required by the rbh module) manually
+#       For more info see https://github.com/bioperl/bioperl-live/releases/tag/release-1-7-0
+RUN cpanm Bio::SearchIO::blastxml
+
 # Finally
 
 ADD . /apples
