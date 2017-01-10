@@ -634,6 +634,22 @@ class Star_Bundler {
             $A = 78;
             $B = 100;
         }
+	elsif ($secondspecies eq "PlantA") {
+            $A = 78;
+            $B = 100;
+        }
+	elsif ($secondspecies eq "PlantB") {
+            $A = 78;
+            $B = 100;
+        }
+	elsif ($secondspecies eq "ArabidopsisLyrata") {
+            $A = 78;
+            $B = 100;
+        }
+	elsif ($secondspecies eq "PopulusJGI2") {
+            $A = 78;
+            $B = 100;
+        }
 	# to here
         else
         {
