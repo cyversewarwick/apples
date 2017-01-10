@@ -16,7 +16,7 @@ bin/*
 !bin/conservationSearch_dataread_tester.pl
 !bin/utr_tool
 bin/utr_tool/test_data
-!bin/Configuration/config.txt
+!bin/Configuration
 
 # ignore OSX crap
 .DS_Store
