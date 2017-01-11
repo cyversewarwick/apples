@@ -449,6 +449,11 @@ foreach my $s1_gene_accession (@species_1_genes)
                         my $g2_3prime = $sequence_info_lookup{$species_2 . "_" . $s2_gene_accession}[THREEEND];
                         my $g2_strand = $sequence_info_lookup{$species_2 . "_" . $s2_gene_accession}[DIRECTION];
 
+                        print $logfile "\t<$g1_strand/$g2_strand,$g1_5prime/$g2_5prime,$g1_3prime/$g2_3prime,". length($sequence_one) . "/" . length($sequence_two) .">";
+
+                        $g1_strand = '+';
+                        $g2_strand = '+';
+
                         $g1_3prime = $g1_strand eq '+' ? length($sequence_one) : 1;
                         $g1_5prime = $g1_strand eq '+' ? 1 : length($sequence_one);
                         $g2_3prime = $g2_strand eq '+' ? length($sequence_two) : 1;
