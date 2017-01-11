@@ -16,9 +16,9 @@ if [ ! -d "works" ]; then
 	mkdir works
 fi
 
-if [ ! -d "outputs" ]; then
-	mkdir outputs
-fi
+# if [ ! -d "outputs" ]; then
+# 	mkdir outputs
+# fi
 
 cp $1 works/genome.fa
 cp $2 works/annot.gff3
@@ -78,5 +78,3 @@ bedtools getfasta -fi genome_stripped.fa -bed promoters.bed -s -fo promoters.fa 
 # rm promoters.bed
 
 # rm universe.txt
-
-# 
