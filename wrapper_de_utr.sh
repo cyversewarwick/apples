@@ -17,6 +17,9 @@ fileB=$2
 FILENAMEA=${fileA##*/} # remove the path and leave only the file name
 FILENAMEB=${fileB##*/}
 
+mv ${fileA} /apples/bin/utr_tool/
+mv ${fileB} /apples/bin/utr_tool/
+
 cd /apples/bin/utr_tool
 
 ./bo_utr.sh $1 $2 $3 $4 $5 $6
