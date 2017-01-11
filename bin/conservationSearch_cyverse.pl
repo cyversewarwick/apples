@@ -69,8 +69,8 @@ use Time::HiRes qw( time ); # Measures runtime for Seaweed and Star_Bundler
 # my $species_1 = "plantA";#"oryza sativa";
 # my $species_2 = "plantB";#"arabidopsis thaliana";
 
-my $species_1 = "Niben 101";
-my $species_2 = "Arabidopsis TAIR10";
+my $species_1 = "PlantA";
+my $species_2 = "PlantB";
 
 $species_1 =~ s/\s//g; # remove any spaces in name
 $species_2 =~ s/\s//g;
@@ -88,7 +88,7 @@ GetOptions(
     'pseudo|p' => \$pseudo_orthologs,
     ) or die "Usage: $0 --slength INTEGER([2000], 500, 5000) --wsize INTEGER([60], 30, 80, 100) --pseudo\n";
 
-my $fn_output = "../outputs/conservation_result_wB_" . substr($species_1, 0, 6) . "_" . substr($species_2, 0, 6) . ( $pseudo_orthologs ? "_pseudo" : "") . ".txt";
+my $fn_output = "../outputs/conservation_result_wB_ws" . $window_size ."_" . substr($species_1, 0, 6) . "_" . substr($species_2, 0, 6) . ( $pseudo_orthologs ? "_pseudo" : "") . ".txt";
 my $fn_log = $fn_output . ".log";
 # my $fn_output = "../output/conservation_result_wB_pd_two_species_plantV_plantA_long.txt";
 open my $outfile, ">$fn_output";
@@ -100,7 +100,7 @@ open my $logfile, ">$fn_log";
 # my $rbh_file = "../output/rbhSearchForked_result_plantV_plantA.txt"; # short version
 
 my %rbhs;
-my $fn_rbh = "../inputs/rbhSearch_result_$species_1\_$species_2\_selected.txt";
+my $fn_rbh = "../inputs/rbhSearch_result_$species_1\_$species_2.txt";
 
 open(my $fh, '<', $fn_rbh) or die "Could not open file '$fn_rbh'. \n$!";
 while (my $line = <$fh>) {
