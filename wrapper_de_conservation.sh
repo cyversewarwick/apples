@@ -90,9 +90,12 @@ if [ ! -d /apples/outputs ]; then mkdir /apples/outputs; fi
 fileE=${13}
 
 mv ${fileE} /apples/inputs/rbhSearch_result_PlantA_PlantB.txt
-cp /de-app-work/* /apples/inputs/
+cp /de-app-work/*.fa /apples/inputs/
+cp /de-app-work/*.bed /apples/inputs/
 
 cd /apples/bin
+
+if [ ! -d /apples/bin/tempfiles ]; then mkdir /apples/bin/tempfiles; fi
 
 ./conservationSearch_cyverse.pl -w ${14}
 cp /apples/outputs/* /de-app-work/
