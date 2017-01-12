@@ -377,11 +377,7 @@ foreach my $s1_gene_accession (@species_1_genes)
                         if ( $? != -1) {
                             print $logfile "(kill)";
                         }
-
-                        # print "\nConservation script two species, removing temporary files.\n";
-                        # unlink glob "'./tempfiles/*'";
-                        # print "\nConservation script two species, seaweed tempfiles removed.\n";
-                        
+                   
                         #What is the max alignment value for this run of seaweeds?
                         my $alignmax = 0;
                         foreach my $cur_val (values %{$result->{"plot"}}){

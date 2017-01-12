@@ -491,11 +491,11 @@ class Jobs::Subtasks::Seaweed_Job extends Jobs::Job {
 		}
         
         #Remove all the temp files
-        #system("rm ${prefix}* 2>/dev/null");
-        #system("rm $primary_reversed_sequence_file_name 2>/dev/null");
-        #system("rm $secondary_reversed_sequence_file_name 2>/dev/null");
-        #system("rm $primary_sequence_file_name 2>/dev/null");
-        #system("rm $secondary_sequence_file_name 2>/dev/null");
+        system("rm ${prefix}* 2>/dev/null");
+        system("rm $primary_reversed_sequence_file_name 2>/dev/null");
+        system("rm $secondary_reversed_sequence_file_name 2>/dev/null");
+        system("rm $primary_sequence_file_name 2>/dev/null");
+        system("rm $secondary_sequence_file_name 2>/dev/null");
         #Remove all the temp files
         
 		return
