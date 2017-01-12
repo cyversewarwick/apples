@@ -97,7 +97,7 @@ cd /apples/bin
 
 if [ ! -d /apples/bin/tempfiles ]; then mkdir /apples/bin/tempfiles; fi
 
-perl conservationSearch_cyverse.pl -w ${14}
+perl conservationSearch_cyverse.pl -w ${14} || true
 
 cp /apples/outputs/* /de-app-work
 
