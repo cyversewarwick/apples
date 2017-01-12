@@ -17,6 +17,8 @@ bin/*
 !bin/utr_tool
 bin/utr_tool/test_data
 !bin/Configuration
+!bin/NDU
+!bin/seaweeds
 
 # ignore OSX crap
 .DS_Store
