@@ -56,7 +56,7 @@ mv ${fileD} /apples/bin/utr_tool/
 
 cd /apples/bin/utr_tool
 
-./bo_utr.sh $7 $8 $9 $10 $11 $12
+./bo_utr.sh $7 $8 $9 ${10} ${11} ${12}
 
 cp /apples/bin/utr_tool/works/promoters.fa /de-app-work/PlantB.fa
 cp /apples/bin/utr_tool/works/promoters.bed /de-app-work/PlantB.bed
@@ -79,12 +79,12 @@ touch "PlantB_GFF_"${FILENAMED}
 if [ ! -d /apples/inputs ]; then mkdir /apples/inputs; fi
 if [ ! -d /apples/outputs ]; then mkdir /apples/outputs; fi
 
-fileE=$13
+fileE=${13}
 
 mv ${fileE} /apples/inputs/rbhSearch_result_PlantA_PlantB.txt
 cp /de-app-work/* /apples/inputs/
 
 cd /apples/bin
 
-./conservationSearch_cyverse.pl -w $14
+./conservationSearch_cyverse.pl -w ${14}
 cp /apples/outputs/* /de-app-work/
