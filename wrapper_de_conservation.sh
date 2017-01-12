@@ -24,10 +24,13 @@ cd /apples/bin/utr_tool
 
 ./bo_utr.sh $1 $2 $3 $4 $5 $6
 
-cp /apples/bin/utr_tool/works/promoters.fa /de-app-work/PlantA.fa
-cp /apples/bin/utr_tool/works/promoters.bed /de-app-work/PlantA.bed
-cp /apples/bin/utr_tool/works/utr3.bed /de-app-work/PlantA_utr3.bed
-cp /apples/bin/utr_tool/works/utr5.bed /de-app-work/PlantA_utr5.bed
+rm /apples/bin/utr_tool/${fileA}
+rm /apples/bin/utr_tool/${fileB}
+
+mv /apples/bin/utr_tool/works/promoters.fa /de-app-work/PlantA.fa
+mv /apples/bin/utr_tool/works/promoters.bed /de-app-work/PlantA.bed
+mv /apples/bin/utr_tool/works/utr3.bed /de-app-work/PlantA_utr3.bed
+mv /apples/bin/utr_tool/works/utr5.bed /de-app-work/PlantA_utr5.bed
 
 
 cd /de-app-work
@@ -58,10 +61,13 @@ cd /apples/bin/utr_tool
 
 ./bo_utr.sh $7 $8 $9 ${10} ${11} ${12}
 
-cp /apples/bin/utr_tool/works/promoters.fa /de-app-work/PlantB.fa
-cp /apples/bin/utr_tool/works/promoters.bed /de-app-work/PlantB.bed
-cp /apples/bin/utr_tool/works/utr3.bed /de-app-work/PlantB_utr3.bed
-cp /apples/bin/utr_tool/works/utr5.bed /de-app-work/PlantB_utr5.bed
+rm /apples/bin/utr_tool/${fileC}
+rm /apples/bin/utr_tool/${fileD}
+
+mv /apples/bin/utr_tool/works/promoters.fa /de-app-work/PlantB.fa
+mv /apples/bin/utr_tool/works/promoters.bed /de-app-work/PlantB.bed
+mv /apples/bin/utr_tool/works/utr3.bed /de-app-work/PlantB_utr3.bed
+mv /apples/bin/utr_tool/works/utr5.bed /de-app-work/PlantB_utr5.bed
 
 
 cd /de-app-work
