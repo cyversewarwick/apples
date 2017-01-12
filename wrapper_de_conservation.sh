@@ -32,6 +32,7 @@ mv /apples/bin/utr_tool/works/promoters.bed /de-app-work/PlantA.bed
 mv /apples/bin/utr_tool/works/utr3.bed /de-app-work/PlantA_utr3.bed
 mv /apples/bin/utr_tool/works/utr5.bed /de-app-work/PlantA_utr5.bed
 
+rm /apples/bin/utr_tool/works/*
 
 cd /de-app-work
 # Make easier for the user to keep track of what input was used
@@ -69,6 +70,7 @@ mv /apples/bin/utr_tool/works/promoters.bed /de-app-work/PlantB.bed
 mv /apples/bin/utr_tool/works/utr3.bed /de-app-work/PlantB_utr3.bed
 mv /apples/bin/utr_tool/works/utr5.bed /de-app-work/PlantB_utr5.bed
 
+rm /apples/bin/utr_tool/works/*
 
 cd /de-app-work
 # Make easier for the user to keep track of what input was used
