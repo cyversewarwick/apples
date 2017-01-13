@@ -583,8 +583,8 @@ foreach my $s1_gene_accession (@species_1_genes)
                                 print $outfile $remo->{"three_prime_pos"} . "\n";
                                 print $outfile $remo->{"conservation"} . "\n"; # file2 alignement score
                                 print $outfile $remo->{"belief_score"} . "\n"; # file2 belif
-                                print $outfile_tabular $outfile $remo->{"conservation"} . "\t";
-                                print $outfile_tabular $outfile $remo->{"belief_score"} . "\n";
+                                print $outfile_tabular $remo->{"conservation"} . "\t";
+                                print $outfile_tabular $remo->{"belief_score"} . "\n";
                                 print $outfile $remo->{"repeat_ratio"} . "\n";
                             }
                             print $outfile "--InnerEnd\n";
