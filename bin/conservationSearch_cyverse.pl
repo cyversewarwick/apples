@@ -89,9 +89,13 @@ GetOptions(
     ) or die "Usage: $0 --slength INTEGER([2000], 500, 5000) --wsize INTEGER([60], 30, 80, 100) --pseudo\n";
 
 my $fn_output = "../outputs/conservation_result_wB_ws" . $window_size ."_" . substr($species_1, 0, 6) . "_" . substr($species_2, 0, 6) . ( $pseudo_orthologs ? "_pseudo" : "") . ".txt";
+my $fn_output2 = $fn_output . ".alignmax";
+my $fn_output3 = $fn_output . ".tabular";
 my $fn_log = $fn_output . ".log";
-# my $fn_output = "../output/conservation_result_wB_pd_two_species_plantV_plantA_long.txt";
+
 open my $outfile, ">$fn_output";
+open my $outfile_alignmax, ">$fn_output2";
+open my $outfile_tabular, ">$fn_output3";
 open my $logfile, ">$fn_log";
 
 #<=== PART 2: Load Inputs ===>#
@@ -553,15 +557,18 @@ foreach my $s1_gene_accession (@species_1_genes)
 
                         #Print the appropriate output
                         print $outfile "--PairStart\n";
-                        print $outfile $s1_gene_accession . "\n";
-                        print $outfile $s2_gene_accession . "\n";
+                        print $outfile $s1_gene_accession . "\n"; #file2
+                        print $outfile $s2_gene_accession . "\n"; # file2
+                        print $outfile_tabular "$s1_gene_accession\t";
+                        print $outfile_tabular "$s2_gene_accession\t";
                         print $outfile $g1_strand . "\n";
                         print $outfile $g2_strand . "\n";
                         print $outfile '$g1_real_start' . "\n";
                         print $outfile '$g2_real_start' . "\n";
                         print $outfile $species_1_sequence . "\n";
                         print $outfile $species_2_sequence . "\n";
-                        print $outfile $alignmax . "\n";
+                        print $outfile $alignmax . "\n"; # file1
+                        print $outfile_alignmax "$alignmax\n";
                         print $outfile "--RemoStart\n";
                         foreach my $remo_set (@remo_sets)
                         {
@@ -569,12 +576,15 @@ foreach my $s1_gene_accession (@species_1_genes)
                             foreach my $remo (@{$remo_set->{"remo_set"}})
                             {
                                 print $outfile "--Organism: " . $remo->{"genome_db"}->{"alias"} . "\n";
-                                print $outfile $remo->{"gi_sequence"} . "\n";
+                                print $outfile $remo->{"gi_sequence"} . "\n"; # file2
+                                print $outfile_tabular $remo->{"gi_sequence"} . "\t";
                                 print $outfile $remo->{"strand"} . "\n";
                                 print $outfile $remo->{"five_prime_pos"} . "\n";
                                 print $outfile $remo->{"three_prime_pos"} . "\n";
-                                print $outfile $remo->{"conservation"} . "\n";
-                                print $outfile $remo->{"belief_score"} . "\n";
+                                print $outfile $remo->{"conservation"} . "\n"; # file2 alignement score
+                                print $outfile $remo->{"belief_score"} . "\n"; # file2 belif
+                                print $outfile_tabular $outfile $remo->{"conservation"} . "\t";
+                                print $outfile_tabular $outfile $remo->{"belief_score"} . "\n";
                                 print $outfile $remo->{"repeat_ratio"} . "\n";
                             }
                             print $outfile "--InnerEnd\n";
