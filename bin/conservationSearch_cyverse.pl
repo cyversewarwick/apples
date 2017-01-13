@@ -584,13 +584,14 @@ foreach my $s1_gene_accession (@species_1_genes)
                                 print $outfile $remo->{"conservation"} . "\n"; # file2 alignement score
                                 print $outfile $remo->{"belief_score"} . "\n"; # file2 belif
                                 print $outfile_tabular $remo->{"conservation"} . "\t";
-                                print $outfile_tabular $remo->{"belief_score"} . "\n";
+                                print $outfile_tabular $remo->{"belief_score"} . "\t";
                                 print $outfile $remo->{"repeat_ratio"} . "\n";
                             }
                             print $outfile "--InnerEnd\n";
                         }
                         print $outfile "--RemoEnd\n";
                         print $outfile "--PairEnd\n";
+                        print $outfile_tabular "\n"; #file2 end
                                         
                         print "\n$s1_gene_accession -> $s2_gene_accession ($alignmax)\n";
                         
