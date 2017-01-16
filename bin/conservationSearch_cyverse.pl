@@ -381,8 +381,8 @@ foreach my $s1_gene_accession (@species_1_genes)
                         printf $logfile "\t[ST%.2f]", $end_seaweed - $start_seaweed ;
 
                         system('killall -9 AlignmentPlot_posix_default_release');
-                        if ( $? != -1) {
-                            print $logfile "(kill)";
+                        if ( $? == 0) {
+                            print $logfile "k";
                         }
                    
                         #What is the max alignment value for this run of seaweeds?
