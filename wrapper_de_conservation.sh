@@ -97,10 +97,10 @@ cd /apples/bin
 
 if [ ! -d /apples/bin/tempfiles ]; then mkdir /apples/bin/tempfiles; fi
 
-perl conservationSearch_cyverse.pl -w ${14} || true
+perl conservationSearch_cyverse.pl -w ${15} || true
 
-if [ ${15} == '--UsePseudo' ]; then
-	perl conservationSearch_cyverse.pl -w ${14} -p || true
+if [ ${14} == '--UsePseudo' ]; then
+	perl conservationSearch_cyverse.pl -w ${15} -p || true
 fi
 
 cp /apples/outputs/* /de-app-work
