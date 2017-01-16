@@ -135,6 +135,9 @@ close $fh;
 #<== SET PSEUDO ORTHOLOGS ==>#
 if($pseudo_orthologs)
 {
+    print "Warning: Running with Pseudo Orthologs\n";
+    print $logfile "Warning: Running with Pseudo Orthologs\n";
+
     my @useful_genes = ();
     my @useful_rbhs = ();
     
@@ -150,7 +153,7 @@ if($pseudo_orthologs)
     %rbhs = ();
     
     @useful_genes = shuffle(@useful_genes);
-    @useful_rbhs = shuffle(@useful_rbhs);
+    # @useful_rbhs = shuffle(@useful_rbhs);
     
     for(my $i=0;$i<scalar(@useful_genes);$i++)
     {
