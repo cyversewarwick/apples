@@ -58,8 +58,6 @@ print "RBH from $ARGV[0] to $ARGV[1].\n";
 #my $in_fn = "/home/grannysmith/data/nasonia_bombyx_rbh.txt";
 my $out_fn = '../outputs/rbhSearchForked_result_' . $ARGV[0] . '_' . $ARGV[1] . '.txt';
 open my $outfile, ">$out_fn";
-my $out_fn2 = $out_fn . '2';
-open my $outfile2, ">$out_fn2";
 my $total_genes = 0;
 my $rbh_succ = 0;
 my %already_done = ();
