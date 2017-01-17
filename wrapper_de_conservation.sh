@@ -82,7 +82,8 @@ touch "PlantB_GFF_"${FILENAMED}
 
 #Inputs - Conservation
 # $13 - File, e.g. rbhSearch_result.txt
-# $14 - Integer, window length, e.g. 30/[60]/80/100
+# $14 - List, both/pseudo/normal
+# $15 - Integer, window length, e.g. 30/[60]/80/100
 
 if [ ! -d /apples/inputs ]; then mkdir /apples/inputs; fi
 if [ ! -d /apples/outputs ]; then mkdir /apples/outputs; fi
