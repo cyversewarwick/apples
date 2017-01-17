@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+echo "${@:1}" > Input_Parameters.txt
+
 #inputs
 # $1 - plantA.fa
 # $2 - plantB.fa
