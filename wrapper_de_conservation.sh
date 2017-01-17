@@ -116,4 +116,7 @@ esac
 
 cp /apples/outputs/* /de-app-work
 
+df -h
+ls /apples/bin/tempfiles
+
 echo "done"
