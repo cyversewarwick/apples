@@ -58,6 +58,8 @@ print "RBH from $ARGV[0] to $ARGV[1].\n";
 #my $in_fn = "/home/grannysmith/data/nasonia_bombyx_rbh.txt";
 my $out_fn = '../outputs/rbhSearchForked_result_' . $ARGV[0] . '_' . $ARGV[1] . '.txt';
 open my $outfile, ">$out_fn";
+my $out_fn2 = $out_fn . '2';
+open my $outfile2, ">$out_fn2";
 my $total_genes = 0;
 my $rbh_succ = 0;
 my %already_done = ();
@@ -169,9 +171,9 @@ foreach my $s1_accession (@species_1_genes)
     #Info about genes
     my $source_gid = $db_1->get_sequence($s1_accession)->[0]->desc;
     if($source_gid =~ m/gene\:([^\s]+)/) {
-        my @source_gid_temp = $source_gid =~ m/gene\:([^\s]+)/;
-        # $source_gid = $1;
-        $source_gid = $source_gid_temp[0];
+        # my @source_gid_temp = $source_gid =~ m/gene\:([^\s]+)/;
+        $source_gid = $1;
+        # $source_gid = $source_gid_temp[0];
         # print "\nSource gene: " . $source_gid . ", " . $source_gid_temp[0];
     } else {
         $source_gid = "unknown";
@@ -276,6 +278,7 @@ foreach my $s1_accession (@species_1_genes)
         $outStatement = "\n$from_accession\t$target_accession\t$target_gid\t$from_gid";
         
         # print $outfile "\n$s1_accession\t$target_accession\t$target_gid\t$source_gid";
+        print $outfile2 "\n$from_accession\t$target_accession\t$target_gid\t$from_gid";
 
     # }
 
