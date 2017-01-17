@@ -33,6 +33,7 @@ case ${3} in
 	perl rbhSearch.pl PlantA PlantB
 	;;
 	forked)
+	if [ ! -d /apples/tempdir ]; then mkdir /apples/tempdir; fi
 	perl rbhSearchForked.pl PlantA PlantB
 	;;
 	*)
