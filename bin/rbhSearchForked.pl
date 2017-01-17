@@ -210,6 +210,9 @@ foreach my $s1_accession (@species_1_genes)
     # }
     # else
     # {
+        my $from_accession = $s1_accession;
+        my $from_gid = $source_gid;
+
         my $target_accession = "none";
         my $target_gid = "none";
         
@@ -269,8 +272,9 @@ foreach my $s1_accession (@species_1_genes)
             print " --Not found!";
         }
         
-        $outStatement = "\n$s1_accession\t$target_accession\t$target_gid\t$source_gid";
-
+        # $outStatement = "\n$s1_accession\t$target_accession\t$target_gid\t$source_gid";
+        $outStatement = "\n$from_accession\t$target_accession\t$target_gid\t$from_gid";
+        
         # print $outfile "\n$s1_accession\t$target_accession\t$target_gid\t$source_gid";
 
     # }
