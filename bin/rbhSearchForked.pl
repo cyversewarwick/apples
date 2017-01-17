@@ -127,7 +127,6 @@ my $total_found_shared = 0;
 tie $total_found_shared, 'IPC::Shareable', 'data', {%shareable_options};
 
 
-# my $outputTotal = '';
 my @outputArray = ("");
 
 $pm->run_on_finish(
@@ -156,11 +155,6 @@ my $genes_count = scalar @species_1_genes;
 foreach my $s1_accession (@species_1_genes)
 {
 
-    # if($childCount % 100 == 0) {
-    #     print $outfile @outputArray;
-    #     @outputArray = ("");
-    # }
-
     if(scalar @outputArray % 100 == 0) {
         print $outfile @outputArray;
         @outputArray = ("");
@@ -168,8 +162,21 @@ foreach my $s1_accession (@species_1_genes)
         # print "\n--progress:$childCount/$genes_count (" . int($childCount*100/$genes_count) . "%)";
     }
 
+    ## Forking starts here
+    $childCount++;
+
+    my $pid = $pm->start($childCount) and next;
+
+    my $from_accession = $s1_accession;
+    my $target_accession = "none";
+    my $target_gid = "none";
+
+    my $outStatement = "";
+
+    $rbh_succ_per_proc = 0;
+    
     #Info about genes
-    my $source_gid = $db_1->get_sequence($s1_accession)->[0]->desc;
+    my $source_gid = $db_1->get_sequence($from_accession)->[0]->desc;
     if($source_gid =~ m/gene\:([^\s]+)/) {
         # my @source_gid_temp = $source_gid =~ m/gene\:([^\s]+)/;
         $source_gid = $1;
@@ -182,16 +189,6 @@ foreach my $s1_accession (@species_1_genes)
 
     print "\n($total_genes) Calculating RBH for $s1_accession ($source_gid)";
 
-
-    ## Forking starts here
-
-    $childCount++;
-
-    my $pid = $pm->start($childCount) and next;
-
-    $rbh_succ_per_proc = 0;
-
-    my $outStatement = "";
 
 # my $searcher_proc = Orthology::Search::RBH->new(
 # $species_1,
@@ -212,11 +209,6 @@ foreach my $s1_accession (@species_1_genes)
     # }
     # else
     # {
-        my $from_accession = $s1_accession;
-        my $from_gid = $source_gid;
-
-        my $target_accession = "none";
-        my $target_gid = "none";
         
         #Get result
         
@@ -264,21 +256,18 @@ foreach my $s1_accession (@species_1_genes)
             } else {
                 $target_gid = "unknown";
             }
-            print " --Found! ($target_gid)";
-        
-            
-
+            print " --Found! ($target_gid)\n";
         }
         else
         {
-            print " --Not found!";
+            print " --Not found!\n";
         }
         
         # $outStatement = "\n$s1_accession\t$target_accession\t$target_gid\t$source_gid";
-        $outStatement = "\n$from_accession\t$target_accession\t$target_gid\t$from_gid";
+        $outStatement = "\n$from_accession\t$target_accession\t$target_gid\t$source_gid";
         
         # print $outfile "\n$s1_accession\t$target_accession\t$target_gid\t$source_gid";
-        print $outfile2 "\n$from_accession\t$target_accession\t$target_gid\t$from_gid";
+        # print $outfile2 "\n$from_accession\t$target_accession\t$target_gid\t$from_gid";
 
     # }
 
