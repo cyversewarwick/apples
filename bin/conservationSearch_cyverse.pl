@@ -384,7 +384,12 @@ foreach my $s1_gene_accession (@species_1_genes)
                         if ( $? == 0) {
                             print $logfile "k";
                         }
-                   
+
+                        if ( glob("core.*") ) {
+                            system('rm core.* 2>/dev/null');
+                            print $logfile "c";
+                        }
+                        
                         #What is the max alignment value for this run of seaweeds?
                         my $alignmax = 0;
                         foreach my $cur_val (values %{$result->{"plot"}}){
