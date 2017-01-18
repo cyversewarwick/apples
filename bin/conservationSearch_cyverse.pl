@@ -380,8 +380,8 @@ foreach my $s1_gene_accession (@species_1_genes)
                         my $end_seaweed = time();
                         printf $logfile "\t[ST%.2f]", $end_seaweed - $start_seaweed ;
 
-                        system('killall -9 AlignmentPlot_posix_default_release');
-                        if ( $? == 0) {
+                        my $kill_status = system('killall -9 AlignmentPlot_posix_default_release') >> 8;
+                        if ( $kill_status == 0) {
                             print $logfile "k";
                         }
 
