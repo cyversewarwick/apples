@@ -98,6 +98,8 @@ cd /apples/bin
 
 if [ ! -d /apples/bin/tempfiles ]; then mkdir /apples/bin/tempfiles; fi
 
+ulimit -c 0
+
 case ${14} in
 	both)
 	perl conservationSearch_cyverse.pl -w ${15} || true
