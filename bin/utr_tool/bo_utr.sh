@@ -20,8 +20,8 @@ fi
 # 	mkdir outputs
 # fi
 
-cp $1 works/genome.fa
-cp $2 works/annot.gff3
+mv $1 works/genome.fa
+mv $2 works/annot.gff3
 
 cd works
 
@@ -34,6 +34,7 @@ grep -P '\tgene\t' annot.gff3 > genelines.gff3
 #strip the potential FASTA line breaks. creates genome_stripped.fa
 # cp $1 genome.fa
 python3 ../scripts/strip_newlines.py # genome.fa -> genome_stripped.fa
+rm genome.fa
 
 #create the .genome file
 samtools faidx genome_stripped.fa # creates .fai file

@@ -24,10 +24,10 @@ cd /apples/bin/utr_tool
 
 ./bo_utr.sh $1 $2 $3 $4 $5 $6
 
-cp /apples/bin/utr_tool/works/promoters.fa /de-app-work/PlantA.fa
-cp /apples/bin/utr_tool/works/promoters.bed /de-app-work/PlantA.bed
-cp /apples/bin/utr_tool/works/utr3.bed /de-app-work/PlantA_utr3.bed
-cp /apples/bin/utr_tool/works/utr5.bed /de-app-work/PlantA_utr5.bed
+mv /apples/bin/utr_tool/works/promoters.fa /de-app-work/PlantA.fa
+mv /apples/bin/utr_tool/works/promoters.bed /de-app-work/PlantA.bed
+mv /apples/bin/utr_tool/works/utr3.bed /de-app-work/PlantA_utr3.bed
+mv /apples/bin/utr_tool/works/utr5.bed /de-app-work/PlantA_utr5.bed
 
 
 cd /de-app-work
