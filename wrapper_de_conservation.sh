@@ -24,8 +24,8 @@ cd /apples/bin/utr_tool
 
 ./bo_utr.sh $1 $2 $3 $4 $5 $6
 
-rm /apples/bin/utr_tool/${fileA}
-rm /apples/bin/utr_tool/${fileB}
+# rm /apples/bin/utr_tool/${fileA}
+# rm /apples/bin/utr_tool/${fileB}
 
 mv /apples/bin/utr_tool/works/promoters.fa /de-app-work/PlantA.fa
 mv /apples/bin/utr_tool/works/promoters.bed /de-app-work/PlantA.bed
@@ -62,8 +62,8 @@ cd /apples/bin/utr_tool
 
 ./bo_utr.sh $7 $8 $9 ${10} ${11} ${12}
 
-rm /apples/bin/utr_tool/${fileC}
-rm /apples/bin/utr_tool/${fileD}
+# rm /apples/bin/utr_tool/${fileC}
+# rm /apples/bin/utr_tool/${fileD}
 
 mv /apples/bin/utr_tool/works/promoters.fa /de-app-work/PlantB.fa
 mv /apples/bin/utr_tool/works/promoters.bed /de-app-work/PlantB.bed
