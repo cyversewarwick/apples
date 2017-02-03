@@ -94,6 +94,7 @@ mv ${fileE} /apples/inputs/rbhSearch_result_PlantA_PlantB.txt
 cp /de-app-work/*.fa /apples/inputs/
 cp /de-app-work/*.bed /apples/inputs/
 
+
 cd /apples/bin
 
 if [ ! -d /apples/bin/tempfiles ]; then mkdir /apples/bin/tempfiles; fi
@@ -117,6 +118,15 @@ case ${14} in
 esac
 
 cp /apples/outputs/* /de-app-work
+
+cd /de-app-work
+rename s/PlantA/$( cut -d '.' -f 1 <<< "$fileA" )/ *
+rename s/PlantB/$( cut -d '.' -f 1 <<< "$fileC" )/ *
+
+if [ ! -d /de-app-work/utr_outputs ]; then mkdir /de-app-work/utr_outputs; fi
+mv /de-app-work/*.fa /de-app-work/utr_outputs/
+mv /de-app-work/*.gff3 /de-app-work/utr_outputs/
+mv /de-app-work/*.bed /de-app-work/utr_outputs/
 
 df -h
 ls /apples/bin/tempfiles
