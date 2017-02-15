@@ -1,15 +1,16 @@
-# APPLES (Analysis of Plant Promoter-Linked Elements) #
+# APPLES (Analysis of Plant Promoter-Linked Elements)
 
-APPLES is a set of tools to analyse promoter sequences on a genome-wide scale.
-
-In this CyVerse-compatible version, two **main modules** are provided: 
+APPLES is a set of tools to analyse promoter sequences on a genome-wide scale. In this CyVerse-compatible version, two **main modules** are provided: 
 
  -  APPLES\_rbh: Find Orthologs as Reciprocal Best Hits
  -  APPLES\_conservation: Find Non-Coding Conserved Regions
 
 In addition, the following tools are also exposed to the user:
 
- - APPLES_utr: Extract sequences based on FASTA and GFF3 files
+ - APPLES\_utr: Extract sequences based on FASTA and GFF3 files
+
+The following diagram illustrates the structure of these modules:
+![APPLES workflow](https://github.com/cyversewarwick/apples/blob/master/files/APPLES_workflow.png)
 
 ## Background
 The original APPLES package is described at [this address](http://www2.warwick.ac.uk/fac/sci/dcs/people/sascha_ott/tools_and_software/apples)
@@ -23,29 +24,65 @@ The original APPLES package is described at [this address](http://www2.warwick.a
 ## Modules
 
 #### APPLES\_rbh
-1.0
+The APPLES\_rbh module finds Orthologs as Reciprocal Best Hits
 
-#### UTR Tool
+[Run APPLES_rbh on CyVerse](https://de.cyverse.org/de/?type=apps&app-id=d99ca952-dbe2-11e6-9e37-0242ac120003)
 
 ##### Version History
-1.1-stable Added parallelisation option [fa9ebdd]
-1.0 Simple version adopted from Grannysmith
+ - 1.0
 
-"ID=" if your `gff3` file looks like this:
+##### Inputs
+
+ - `Protein FASTA` of Species A
+ - `Protein FASTA` of Species B
+
+#### UTR Tool
+The APPLES\_utr module extracts sequences based on FASTA and GFF3 files of **a** species
+![Screenshot of APPLES_utr on CyVerse DE](https://github.com/cyversewarwick/apples/blob/master/files/screenshot_utr.png)
+[Run APPLES_utr on CyVerse](https://de.cyverse.org/de/?type=apps&app-id=d99ca952-dbe2-11e6-9e37-0242ac120003)
+
+##### Version History
+
+ - 1.1-stable Added parallelisation option [fa9ebdd]
+ - 1.0 Simple version adopted from Grannysmith
+
+##### Inputs
+For a Species X:
+
+ - `Gene FASTA*` - This is the file from which you wish to extract your sequences from. Provided that you have the matching GFF3 annotation, this file may be genome, scaffold or others based.
+ - `GFF3*` - This is the file which annotates the FASTA file.
+ - `Gene ID Identifier Text**` - This is the text which prefixes the Gene ID in the 9th column of the GFF3 file. Check your GFF3 to see what goes here.
+ - `Sequence Length` - The number of bases which you wish to extract upstream.
+ - `Stop at Neighbouring Gene` - Check this if you wish the sequence extraction to stop at neighbouring gene.
+ - `Include the 5-prime UTR region` - Check to start the upstream at TSS so that the sequence include the UTR region. Otherwise start at 5-prime.
+
+* - Sequences of a species are queried from a pair of FASTA and GFF3 files. This requires that the Sequence IDs in both files to match. In the FASTA file, this is the ID following the `>` charactor in the description lines; in the GFF3 file, this is the value stored in the first column of the gene lines (i.e. lines that says "gene" in the 3rd column).
+
+** - To understand the `Gene ID Identifier Text` works, here are a couple of examples:
+Use "ID=" if your `gff3` file looks like this:
 `Niben101Scf00059        maker   gene    513034  528469  .       +       .       ID=Niben101Scf00059g04019;Alias=maker-Niben101Scf00059-snap-gene-4.18`
 
-"ID=gene:" if your `gff3` file looks like this:
+Use "ID=gene:" if your `gff3` file looks like this:
 `1       tair    gene    31170   33153   .       -       .       ID=gene:AT1G01050;Name=PPA1;biotype=protein_coding;description=Soluble inorganic pyrophosphatase 1 [Source:UniProtKB/Swiss-Prot%3BAcc:Q93V56];gene_id=AT1G01050;logic_name=tair`
 
+
 #### Conservation Module
-Inputs:
-Sequences of a species are queried from a pair of FASTA and GFF3 files. This requires that the Sequence IDs in both files to match. In the FASTA file, this is the ID following the `>` charactor in the description lines; in the GFF3 file, this is the value stored in the first column of the gene lines (i.e. lines that says "gene" in the 3rd column).
+The APPLES_conservation module finds Non-Coding Conserved Regions
+![Screenshot of APPLES_conservation on CyVerse DE](https://github.com/cyversewarwick/apples/blob/master/files/screenshot_conservation.png)
+
+[Run APPLES_conservation on CyVerse](https://de.cyverse.org/de/?type=apps&app-id=d99ca952-dbe2-11e6-9e37-0242ac120003)
+
+##### Inputs
+There are three sections of inputs for the conservation module. The first two are identical to that of the utr module with each one being for one of the two species. In the third section:
+
+ - `Orthologs` - A total of 4 columns (tab-separated) are required in this file. Column 1: Species A's protein ID; Column 2: Species B's protein ID; Column 3: Species B's gene ID; Column 4: Species A's gene ID. i.e. "SpeciesA_proteinID SpeciesB_proteinID SpeciesB_geneID SpeciesA_geneID". This is the format in which results from the APPLES_rbh module are produced.
+ - `Orthologs Mode` - Results from the Pseudo-Orthologs option is used as a controlled result which is only useful when compared with the result produced by using the correspoinding (proper) orthologs. If you don't know what it means, please use the default mode.
+ - `Window Size` - The Seaweed algorithm aligns substrings of the given sequences (the length of which are specified in each species's "Sequence Length" argument) at a time. The length of this substring is called the "Window Size". It is recommended to use one of these values: 30 / 60 (default) / 80 / 100
+
 
 ##### Parallelisation
-
+Use this following command to split the orthologs file:
 `split -d --number=l/$(nproc) rbhSearch_result_PlantA_PlantB.txt rbhSearch_result_PlantA_PlantB.txt`
-
-The Seaweed algorithm aligns substrings of the given sequences (the length of which are specified in each species's "Sequence Length" argument) at a time. The length of this substring is called the "Window Size". It is recommended to use one of these values: 30 / 60 (default) / 80 / 100
 
 ## Accessibility
 
