@@ -1,4 +1,5 @@
 # APPLES (Analysis of Plant Promoter-Linked Elements)
+![APPLES logo](https://github.com/cyversewarwick/apples/blob/master/files/APPLES.png)
 
 APPLES is a set of tools to analyse promoter sequences on a genome-wide scale. In this CyVerse-compatible version, two **main modules** are provided: 
 
@@ -10,6 +11,7 @@ In addition, the following tools are also exposed to the user:
  - APPLES\_utr: Extract sequences based on FASTA and GFF3 files
 
 The following diagram illustrates the structure of these modules:
+
 ![APPLES workflow](https://github.com/cyversewarwick/apples/blob/master/files/APPLES_workflow.png)
 
 ## Background
@@ -38,7 +40,9 @@ The APPLES\_rbh module finds Orthologs as Reciprocal Best Hits
 
 #### UTR Tool
 The APPLES\_utr module extracts sequences based on FASTA and GFF3 files of **a** species
+
 ![Screenshot of APPLES_utr on CyVerse DE](https://github.com/cyversewarwick/apples/blob/master/files/screenshot_utr.png)
+
 [Run APPLES_utr on CyVerse](https://de.cyverse.org/de/?type=apps&app-id=d99ca952-dbe2-11e6-9e37-0242ac120003)
 
 ##### Version History
@@ -72,6 +76,7 @@ Use "ID=gene:" if your `gff3` file looks like this:
 
 #### Conservation Module
 The APPLES_conservation module finds Non-Coding Conserved Regions
+
 ![Screenshot of APPLES_conservation on CyVerse DE](https://github.com/cyversewarwick/apples/blob/master/files/screenshot_conservation.png)
 
 [Run APPLES_conservation on CyVerse](https://de.cyverse.org/de/?type=apps&app-id=d99ca952-dbe2-11e6-9e37-0242ac120003)
@@ -97,6 +102,7 @@ Similar to all of the CyVerse UK applications developed at Warwick. There are 3 
 3. With the source codes that are hosted on our [Github repository :octocat:](https://github.com/cyversewarwick). This approach will give you more information of how the application actually works. We are always looking to improve our code, so feel free to send us a pull request.
 
 The modules related to APPLES can be searched on the [CyVerse Discovery Environment](https://de.cyverse.org/)  using the "**apples**" keyword in the application search box as shown in this screenshot:
+
 ![Search for APPLES on CyVerse DE](https://github.com/cyversewarwick/apples/blob/master/files/screenshot_search.png)
 
 
