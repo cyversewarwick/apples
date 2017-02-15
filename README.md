@@ -56,15 +56,19 @@ For a Species X:
  - `Stop at Neighbouring Gene` - Check this if you wish the sequence extraction to stop at neighbouring gene.
  - `Include the 5-prime UTR region` - Check to start the upstream at TSS so that the sequence include the UTR region. Otherwise start at 5-prime.
 
+```
 * - Sequences of a species are queried from a pair of FASTA and GFF3 files. This requires that the Sequence IDs in both files to match. In the FASTA file, this is the ID following the `>` charactor in the description lines; in the GFF3 file, this is the value stored in the first column of the gene lines (i.e. lines that says "gene" in the 3rd column).
+```
 
+```
 ** - To understand the `Gene ID Identifier Text` works, here are a couple of examples:
+
 Use "ID=" if your `gff3` file looks like this:
 `Niben101Scf00059        maker   gene    513034  528469  .       +       .       ID=Niben101Scf00059g04019;Alias=maker-Niben101Scf00059-snap-gene-4.18`
 
 Use "ID=gene:" if your `gff3` file looks like this:
 `1       tair    gene    31170   33153   .       -       .       ID=gene:AT1G01050;Name=PPA1;biotype=protein_coding;description=Soluble inorganic pyrophosphatase 1 [Source:UniProtKB/Swiss-Prot%3BAcc:Q93V56];gene_id=AT1G01050;logic_name=tair`
-
+```
 
 #### Conservation Module
 The APPLES_conservation module finds Non-Coding Conserved Regions
