@@ -1,0 +1,9 @@
+services:
+  - docker
+install:
+  - docker build -f Dockerfile.apples -t apples .
+  - docker build -f Dockerfile.apples_rbh -t apples-rbh .
+  - docker build -f Dockerfile.apples_utr -t apples-utr .
+  - docker build -f Dockerfile.apples_conservation -t apples-conservation .
+script:
+  - docker images | grep apples-conservation 
