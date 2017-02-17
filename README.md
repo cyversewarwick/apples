@@ -1,3 +1,7 @@
+[![Build Status](https://travis-ci.org/cyversewarwick/apples.svg?branch=master)](https://travis-ci.org/cyversewarwick/apples)
+[![](https://images.microbadger.com/badges/image/cyversewarwick/apples_conservation.svg)](https://microbadger.com/images/cyversewarwick/apples_conservation)
+[![](https://images.microbadger.com/badges/version/cyversewarwick/apples_conservation.svg)](https://microbadger.com/images/cyversewarwick/apples_conservation)
+
 # APPLES (Analysis of Plant Promoter-Linked Elements)
 ![APPLES logo](https://github.com/cyversewarwick/apples/blob/master/files/APPLES.png)
 
