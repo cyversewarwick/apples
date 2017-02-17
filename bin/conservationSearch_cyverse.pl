@@ -21,6 +21,7 @@ use NDU::Gen qw(:ALL);
 use Data::Dumper;
 
 use File::Spec;
+use Try::Tiny;
 
 #Read Commandline Options
 use Getopt::Long qw(GetOptions);
@@ -251,7 +252,7 @@ foreach my $s1_gene_accession (@species_1_genes)
     {
         # if( defined($rbhs{$s1_gene_accession}) && $rbhs{$s1_gene_accession} ne "none" ) {
         if( defined($rbhs{$s1_gene_accession}) ) {
-            foreach my $s2_gene_accession ( @{$rbhs{$s1_gene_accession}} ) {
+            FORS2: foreach my $s2_gene_accession ( @{$rbhs{$s1_gene_accession}} ) {
                 if(  $s2_gene_accession ne "none" ) {
                 
                     print "Progress: ". $count . "/" . $total . " s1_gene_accession:" . $s1_gene_accession . "\n";
@@ -375,10 +376,19 @@ foreach my $s1_gene_accession (@species_1_genes)
 
                         
                         #And run the job
-                        my $start_seaweed = time();
-                        my $result = $job->run;
-                        my $end_seaweed = time();
-                        printf $logfile "\t[ST%.2f]", $end_seaweed - $start_seaweed ;
+                        my $result;
+                        try{
+                            my $start_seaweed = time();
+                            $result = $job->run;
+                            my $end_seaweed = time();
+                            printf $logfile "\t[ST%.2f]", $end_seaweed - $start_seaweed ;
+                        } catch {
+                            print $logfile "\t[ST_aborted]\n";
+                            print $outfile "Seaweed_aborted\n";
+                            print $outfile_alignmax "-1\n";
+                            print $outfile_tabular "Seaweed_aborted\n";
+                            next FORS2;
+                        };
 
                         # In case there are any hanging processes from running the Seaweed executable
                         # We log the kill count at the end of the script because of <defunct> processes after kill
