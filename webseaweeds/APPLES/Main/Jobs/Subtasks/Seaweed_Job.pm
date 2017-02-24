@@ -241,6 +241,41 @@ class Jobs::Subtasks::Seaweed_Job extends Jobs::Job {
 							. "--output-file ${prefix}_nr "
 							. $code_parameters	);
 
+		my $alarm_length = 10; #seconds
+
+		my $alignment_executable = find_executable("alignmentsimple");
+
+		if ( !-e $alignment_executable ) {
+			die "Alignment (simple) executable $alignment_executable not found.";
+		}
+
+		if ($windowlength > 127) {
+			@plot_exec = ( "$alignment_executable "
+							. "$primary_sequence_file_name "
+							. "$secondary_sequence_file_name "
+							. "${prefix}_nn_result "
+							. "${prefix}_nn_profile_1 "
+							. "${prefix}_nn_profile_2 "
+							. " 1 1 $windowlength 0" ,
+						"$alignment_executable "
+							. "$primary_sequence_file_name "
+							. "$secondary_reversed_sequence_file_name "
+							. "${prefix}_nr_result "
+							. "${prefix}_nr_profile_1 "
+							. "${prefix}_nr_profile_2 "
+							. " 1 1 $windowlength 0" ,);
+			$alarm_length = 120; #seconds
+
+			open my $hist_file_nn, ">${prefix}_nn_histogram";
+			open my $hist_file_nr, ">${prefix}_nr_histogram";
+			
+			print $hist_file_nn "0\n0\n";
+			print $hist_file_nr "0\n0\n";
+
+			close $hist_file_nn;
+			close $hist_file_nr;
+		}
+
 		# foreach my $pe (@plot_exec) {
 		# 	# here stuff gets run!
 		# 	debug("Running command: $pe\n");
@@ -256,7 +291,7 @@ class Jobs::Subtasks::Seaweed_Job extends Jobs::Job {
 			foreach my $jj (1..3){ # iterate attempts
 
 				my $chld_pid;
-				my $alarm_length = 10; #seconds
+				# my $alarm_length = 10; #seconds
 
 				eval{
 					local $SIG{ALRM} = sub{ die "alarm_sound\n"};

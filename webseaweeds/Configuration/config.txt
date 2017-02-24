@@ -26,6 +26,7 @@ blast_db = ../BLASTDB
 # Used for conservation script
 # path_to_windowalignment = /home/agave/lib/bin-seaweeds/AlignmentPlot_posix_default_release
 path_to_windowalignment = /apples/bin/seaweeds/AlignmentPlot_posix_default_release
+path_to_alignmentsimple = /apples/bin/seaweeds/Alignment
 #path_to_pssmtool = /home/agave/lib/bin-seaweeds/PSSM_Tool_posix_default_release
 #path_to_dot = /usr/bin/dot
 #path_to_qvalue = /opt/meme/bin/qvalue
