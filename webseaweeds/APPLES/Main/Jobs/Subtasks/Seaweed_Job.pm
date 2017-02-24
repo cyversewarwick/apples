@@ -263,7 +263,7 @@ class Jobs::Subtasks::Seaweed_Job extends Jobs::Job {
 							. "${prefix}_nr_result "
 							. "${prefix}_nr_profile_1 "
 							. "${prefix}_nr_profile_2 "
-							. " 1 1 $windowlength 0" ,);
+							. " 1 1 $windowlength 0");
 			$alarm_length = 120; #seconds
 
 			open my $hist_file_nn, ">${prefix}_nn_histogram";
