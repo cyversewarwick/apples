@@ -24,6 +24,14 @@ while [[ $# -gt 1 ]]; do
 			WINDOW="$2"
 			shift
 		;;
+		-a|--thresholda)
+			THRESHOLDA="$2"
+			shift
+		;;
+		-b|--thresholdb)
+			THRESHOLDB="$2"
+			shift
+		;;
 		*)
 			echo "Unkown option $1 with value $2"
 			shift
@@ -32,36 +40,53 @@ while [[ $# -gt 1 ]]; do
 	shift
 done
 
+DEPATH=$(pwd)
+DBFULLPATH=$(pwd)/${DBDIR}
+OUTFULLPATH=$(pwd)/outputs
+
+if [ ! -d ${OUTFULLPATH} ]; then mkdir ${OUTFULLPATH}; fi
+
 echo "Species:    =${SPECIES}"
 echo "Directory:  =${DBDIR}"
+echo "Full Path:  =${DBFULLPATH}"
 echo "Mode:       =${MODE}"
 echo "Window:     =${WINDOW}"
+echo "Thrshld_A:  =${THRESHOLDA}"
+echo "Thrshld_B:  =${THRESHOLDB}"
 
-ls -al ${DBDIR}
-
-cd /apples/bin
-
-if [ ! -d /apples/bin/tempfiles ]; then mkdir /apples/bin/tempfiles; fi
+ls -al ${DBFULLPATH}
 
 ulimit -c 0
 
-# case ${MODE} in
-# 	both)
-# 		perl conservationSearch_cyverse_multiple.pl --species ${SPECIES} --dbdir ${DBDIR} -w ${WINDOW} || true
-# 		perl conservationSearch_cyverse_multiple.pl --species ${SPECIES} --dbdir ${DBDIR} -w ${WINDOW} -p || true
-# 	;;
-# 	pseudo)
-# 		perl conservationSearch_cyverse_multiple.pl --species ${SPECIES} --dbdir ${DBDIR} -w ${WINDOW} -p || true
-# 	;;
-# 	normal)
-# 		perl conservationSearch_cyverse_multiple.pl --species ${SPECIES} --dbdir ${DBDIR} -w ${WINDOW} || true
-# 	;;
-# 	*)
-# 		perl conservationSearch_cyverse_multiple.pl --species ${SPECIES} --dbdir ${DBDIR} -w ${WINDOW} || true
-# 	;;
-# esac
+if [ ! -d /apples/bin/tempfiles ]; then mkdir /apples/bin/tempfiles; fi
 
+cd /apples/bin
+
+if [[ ${MODE} == 'normal' ]] || [[ ${MODE} == 'both' ]]; then
+	echo "calling without p"
+	perl conservationSearch_cyverse_multiple.pl \
+		--species ${SPECIES} \
+		--dbdir ${DBFULLPATH} \
+		--outdir ${OUTFULLPATH} \
+		--wsize ${WINDOW} \
+		--tha ${THRESHOLDA} \
+		--thb ${THRESHOLDB} || true
+fi
+
+if [[ ${MODE} == 'pseudo' ]] || [[ ${MODE} == 'both' ]]; then
+	echo "calling with p"
+	perl conservationSearch_cyverse_multiple.pl \
+		--species ${SPECIES} \
+		--dbdir ${DBFULLPATH} \
+		--outdir ${OUTFULLPATH} \
+		--wsize ${WINDOW} \
+		--tha ${THRESHOLDA} \
+		--thb ${THRESHOLDB} \
+		--pseudo || true
+fi
+
+cd ${DEPATH}
+tar -zcf con_${SPECIES//,/_}_w${WINDOW}_a${THRESHOLDA}_b${THRESHOLDB}_${MODE}.tar.gz outputs
 # cp /apples/outputs/* /de-app-work
-
 
 echo "done"
