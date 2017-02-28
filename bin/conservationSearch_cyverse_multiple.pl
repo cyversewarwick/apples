@@ -788,3 +788,6 @@ foreach my $s1_gene_accession (@species_1_genes)
         }
     }
 }
+
+my $kill_count = `ps | awk '/AlignmentPlot*/ && /defunct/ && !/awk/' | wc -l`;
+print $logfile "KCount: $kill_count";
