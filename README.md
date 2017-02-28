@@ -68,6 +68,8 @@ With Species_1 being the central species, you will have the following folder str
 ```
 See `/cyverseZone/home/shared/cyverseuk/apples_testdata/apples_conservation_multiple/app_short` for an example.
 
+![Screenshot of APPLES_conservation_multiple on CyVerse DE](https://github.com/cyversewarwick/apples/blob/master/files/screenshot_conservation_multiple.png)
+
 #### APPLES\_rbh
 The APPLES\_rbh module finds Orthologs as Reciprocal Best Hits
 
