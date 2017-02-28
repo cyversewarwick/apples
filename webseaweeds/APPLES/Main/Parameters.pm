@@ -341,6 +341,8 @@ class Star_Bundler_Parameters {
     has 'overlap_tolerance' => (is => 'ro', isa => 'Int', required => 1, default => 20);
     has 'belief_value' => (is => 'ro', isa => Probability, required => 1, default => 0.1);
     has 'partial_threshold_matrix' => (is => 'ro', isa => 'Partial_Threshold_Matrix', required => 1);
+    has 'threshold_a' => (is => 'ro', isa => 'Int', required => 1, default => 78);
+    has 'threshold_b' => (is => 'ro', isa => 'Int', required => 1, default => 100);
 } # Star_Bundler_Parameters #
 
 class Generic_Orthology_Finding_Parameters {

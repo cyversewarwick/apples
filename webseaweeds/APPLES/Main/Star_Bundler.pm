@@ -142,7 +142,7 @@ class Star_Bundler {
 	  for my $i( 0..$#ReMoDataList ) {
 	    my ($actualcomparison) = $ReMoDataList[$i];
 	    
-	    my ($nextcheck) = $self->private_build_one_sr_table($i, $actualcomparison->firstsequence->species, $actualcomparison->secondsequence->species, $parameters->partial_threshold_matrix);
+	    my ($nextcheck) = $self->private_build_one_sr_table($i, $actualcomparison->firstsequence->species, $actualcomparison->secondsequence->species, $parameters->partial_threshold_matrix, $parameters->threshold_a, $parameters->threshold_b);
 
 	    if ($nextcheck eq FALSE) {
 	      $allspeciesdefinedforautomatic = FALSE;
@@ -560,101 +560,105 @@ class Star_Bundler {
 	  return $nCount;
 	} # private_count_ns #
 	
-	method private_build_one_sr_table (Int $position, APPLESSpeciesName $firstspecies, APPLESSpeciesName $secondspecies, Partial_Threshold_Matrix $ptm ) {
+	method private_build_one_sr_table (Int $position, APPLESSpeciesName $firstspecies, APPLESSpeciesName $secondspecies, Partial_Threshold_Matrix $ptm, Int $threshold_a, Int $threshold_b) {
 	  my @SRtables = @{$self->sr_tables};# deref the sr array		
 	  my ($A, $B, $nextscore, $integrate) = 0;
 	  my ($S, $R);
+
+	  $A = $threshold_a;
+	  $B = $threshold_b;
+	  print "\nThreshold:A-$A,B-$B\n";
 	  
         #[nd] Here is where we get the thresholds
         #my @threshold = $ptm->get_thresholds($firstspecies, $secondspecies);
         #$A = $threshold[0]; #min threshold
         #$B = $threshold[1]; #max threshold
         
-        if($secondspecies eq "apis mellifera")
-        {
-            $A = 80;
-            $B = 94;
-        }
-        elsif($secondspecies eq "atta cephalotes")
-        {
-            $A = 80;
-            $B = 94;
-        }
-        elsif($secondspecies eq "bombyx mori")
-        {
-            $A = 80;
-            $B = 94;
-        }
-        elsif($secondspecies eq "homo sapiens")
-        {
-            $A = 80;
-            $B = 94;
-        }
+ #        if($secondspecies eq "apis mellifera")
+ #        {
+ #            $A = 80;
+ #            $B = 94;
+ #        }
+ #        elsif($secondspecies eq "atta cephalotes")
+ #        {
+ #            $A = 80;
+ #            $B = 94;
+ #        }
+ #        elsif($secondspecies eq "bombyx mori")
+ #        {
+ #            $A = 80;
+ #            $B = 94;
+ #        }
+ #        elsif($secondspecies eq "homo sapiens")
+ #        {
+ #            $A = 80;
+ #            $B = 94;
+ #        }
 
-	# LB added pairwise thresholds for plant species, from here.
-        # !currently assuming here that first species is rice! (May) need to change these hardwired values if using different first species!, e.g.grape-banana 
+	# # LB added pairwise thresholds for plant species, from here.
+ #        # !currently assuming here that first species is rice! (May) need to change these hardwired values if using different first species!, e.g.grape-banana 
 	
-	elsif ($secondspecies eq "musa acuminata"){
-	    $A = 78;
-	    $B = 100;
-	}
-	elsif ($secondspecies eq "vitis vinifera") {
-	    $A = 78;
-	    $B = 100;
-	}
-	elsif ($secondspecies eq "arabidopsis thaliana") {
-	    $A = 78; 
-	    $B = 100;
-	}
-	elsif ($secondspecies eq "sorghum bicolor") {
-	    $A = 78;
-	    $B = 100;
-	}
-	elsif ($secondspecies eq "phoenix dactylifera") {
-	    $A = 78;
-	    $B = 100;
-	}
-	elsif ($secondspecies eq "oryza sativa") {
-            $A = 78;
-            $B = 100;
-        }
-	elsif ($secondspecies eq "populus trichocarpa") {
-            $A = 78;
-            $B = 100;
-        }
-	elsif ($secondspecies eq "medicago truncatula") {
-            $A = 78;
-            $B = 100;
-        }
-	elsif ($secondspecies eq "ArabidopsisTAIR10") {
-            $A = 78;
-            $B = 100;
-        }
-	elsif ($secondspecies eq "Niben101") {
-            $A = 78;
-            $B = 100;
-        }
-	elsif ($secondspecies eq "PlantA") {
-            $A = 78;
-            $B = 100;
-        }
-	elsif ($secondspecies eq "PlantB") {
-            $A = 78;
-            $B = 100;
-        }
-	elsif ($secondspecies eq "ArabidopsisLyrata") {
-            $A = 78;
-            $B = 100;
-        }
-	elsif ($secondspecies eq "PopulusJGI2") {
-            $A = 78;
-            $B = 100;
-        }
-	# to here
-        else
-        {
-            die "\nUnknown species";
-        }
+	# elsif ($secondspecies eq "musa acuminata"){
+	#     $A = 78;
+	#     $B = 100;
+	# }
+	# elsif ($secondspecies eq "vitis vinifera") {
+	#     $A = 78;
+	#     $B = 100;
+	# }
+	# elsif ($secondspecies eq "arabidopsis thaliana") {
+	#     $A = 78; 
+	#     $B = 100;
+	# }
+	# elsif ($secondspecies eq "sorghum bicolor") {
+	#     $A = 78;
+	#     $B = 100;
+	# }
+	# elsif ($secondspecies eq "phoenix dactylifera") {
+	#     $A = 78;
+	#     $B = 100;
+	# }
+	# elsif ($secondspecies eq "oryza sativa") {
+ #            $A = 78;
+ #            $B = 100;
+ #        }
+	# elsif ($secondspecies eq "populus trichocarpa") {
+ #            $A = 78;
+ #            $B = 100;
+ #        }
+	# elsif ($secondspecies eq "medicago truncatula") {
+ #            $A = 78;
+ #            $B = 100;
+ #        }
+	# elsif ($secondspecies eq "ArabidopsisTAIR10") {
+ #            $A = 78;
+ #            $B = 100;
+ #        }
+	# elsif ($secondspecies eq "Niben101") {
+ #            $A = 78;
+ #            $B = 100;
+ #        }
+	# elsif ($secondspecies eq "PlantA") {
+ #            $A = 78;
+ #            $B = 100;
+ #        }
+	# elsif ($secondspecies eq "PlantB") {
+ #            $A = 78;
+ #            $B = 100;
+ #        }
+	# elsif ($secondspecies eq "ArabidopsisLyrata") {
+ #            $A = 78;
+ #            $B = 100;
+ #        }
+	# elsif ($secondspecies eq "PopulusJGI2") {
+ #            $A = 78;
+ #            $B = 100;
+ #        }
+	# # to here
+ #        else
+ #        {
+ #            die "\nUnknown species";
+ #        }
         
 	  for my $S( 0..100 ) {
 	    for my $R( 0..100 ) {
