@@ -250,6 +250,7 @@ class Jobs::Subtasks::Seaweed_Job extends Jobs::Job {
 		}
 
 		if ($windowlength > 127) {
+			print "\nWindow length ($windowlength) is greater than 127. Switching to simple alignment.\n";
 			@plot_exec = ( "$alignment_executable "
 							. "$primary_sequence_file_name "
 							. "$secondary_sequence_file_name "
