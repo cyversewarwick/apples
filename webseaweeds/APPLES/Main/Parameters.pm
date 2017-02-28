@@ -31,8 +31,12 @@ class FASTA_Sequence_Database_Parameters extends Genome_Sequence_Database_Parame
 	has 'filename' => (is => 'ro', required => 1, isa => 'Str'); # must be the full pathname
 	                                                             # Sascha: had problems with Bioperl when filename ended in '.txt' instead of '.fasta', so better make it '.fasta'
 	has 'natural_species_name' => (is => 'ro', isa => APPLESSpeciesName); # optional, but will be necessary if dealing with phylogenetic trees
+	# has 'natural_species_name' => (is => 'ro', isa => 'Str'); # Bo: Don't think we need to constrain the species name especially when it is FASTA-based
 
 	has 'alias' => (is => 'ro', required => 1, isa => APPLESSpeciesName);
+	# has 'alias' => (is => 'ro', required => 1, isa => 'Str'); # Bo: Don't think we need to constrain the species name especially when it is FASTA-based
+	# ^^ this is now done in APPLES_Datatypes.pm with a '|| ($_[0] ^ $_[0])'
+	
 	# has 'location' => (is => 'ro', isa => EnsemblLocation, required => 1);
 
 	method get_md5sum() {
