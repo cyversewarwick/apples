@@ -33,7 +33,7 @@ The original APPLES package is described at [this address](http://www2.warwick.a
 
 ##### Inputs
 
-###### Species String
+:whale: Species String
 This is a string of Species names separated by ",".
  
  - Note that there is no "," behind the last species;
@@ -41,30 +41,30 @@ This is a string of Species names separated by ",".
 
 Example: Species\_1,Species\_2,Species_3
 
-###### Sequence Database Folder
+:whale: Sequence Database Folder
 
 With Species_1 being the central species, you will have the following folder structure:
 ```
-.<selected\_folder>
-+-- Species_1
-|   +-- PlantA.fa
-|   +-- PlantA.bed
-|   +-- PlantA_utr5.bed
-|   +-- PlantA_utr3.bed
-+-- Species_2
-|   +-- PlantA.fa
-|   +-- PlantA.bed
-|   +-- PlantA_utr5.bed
-|   +-- PlantA_utr3.bed
-|   +-- rbhSearch_result.txt
-+-- Species_3
-|   +-- PlantA.fa
-|   +-- PlantA.bed
-|   +-- PlantA_utr5.bed
-|   +-- PlantA_utr3.bed
-|   +-- rbhSearch_result.txt
-.
-.
+<input_folder>
+	+-- Species_1
+	|   +-- PlantA.fa
+	|   +-- PlantA.bed
+	|   +-- PlantA_utr5.bed
+	|   +-- PlantA_utr3.bed
+	+-- Species_2
+	|   +-- PlantA.fa
+	|   +-- PlantA.bed
+	|   +-- PlantA_utr5.bed
+	|   +-- PlantA_utr3.bed
+	|   +-- rbhSearch_result.txt
+	+-- Species_3
+	|   +-- PlantA.fa
+	|   +-- PlantA.bed
+	|   +-- PlantA_utr5.bed
+	|   +-- PlantA_utr3.bed
+	|   +-- rbhSearch_result.txt
+	.
+	.
 ```
 See `/cyverseZone/home/shared/cyverseuk/apples_testdata/apples_conservation_multiple/app_short` for an example.
 
