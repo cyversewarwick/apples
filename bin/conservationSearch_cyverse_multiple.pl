@@ -113,6 +113,9 @@ if (not -e $output_directory_extra) {
 
 my @species_list = split(/,/, $species_string);
 
+open my $outfile_extra, ">$output_directory_extra/" . $species_list[0]; # Avoids an empty /extra folder which will not be returned
+close($outfile_extra);
+
 my $fn_output = "$output_directory/cnsOut_m_wB_ws" . $window_size ."_" . substr($species_list[0], 0, 6) . "_" . scalar(@species_list) . ( $pseudo_orthologs ? "_pseudo" : "") . ".txt";
 my $fn_output2 = $fn_output . ".alignmax";
 my $fn_output3 = $fn_output . ".tabular";
