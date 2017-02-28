@@ -196,65 +196,65 @@ if($pseudo_orthologs)
 {
     for(my $i=1;$i<scalar(@species_list);$i++)
     {
-        # my @useful_genes = ();
-        # my @useful_rbhs = ();
-        # my %rbh_numbers;
-        
-        # foreach my $rbh (keys %{$rbh_results[$i]})
-        # {
-        #     push(@useful_genes, $rbh);
-        #     my $no_rbhs = 0;
-        #     foreach my $ortholog (@{$rbh_results[$i]->{$rbh}})
-        #     {
-        #         push(@useful_rbhs, $ortholog);
-        #         $no_rbhs++;
-        #     }
-        #     $rbh_numbers{$rbh} = $no_rbhs;
-        # }
-        
-        # $rbh_results[$i] = ();
-        
-        # @useful_genes = shuffle(@useful_genes);
-        # @useful_rbhs = shuffle(@useful_rbhs);
-        
-        # my $j = 0;
-        # for(my $k=0;$k<scalar(@useful_genes);$k++)
-        # {
-        #     while($rbh_numbers{$useful_genes[$k]})
-        #     {
-        #         push(@{$rbh_results[$i]->{$useful_genes[$k]}}, $useful_rbhs[$j]);
-        #         $j++;
-        #         $rbh_numbers{$useful_genes[$k]}--;
-        #     }
-        # }
-
-        print $logfile "Warning: Running with Pseudo Orthologs\n";
-
-        # my %rbhs = $rbh_results[$i];
-
         my @useful_genes = ();
         my @useful_rbhs = ();
+        my %rbh_numbers;
         
         foreach my $rbh (keys %{$rbh_results[$i]})
         {
-            # if($rbh_results[$i]->{$rbh} ne "none")
-            # {
-                push(@useful_genes, $rbh);
-                push(@useful_rbhs, $rbh_results[$i]->{$rbh});
-            # }
+            push(@useful_genes, $rbh);
+            my $no_rbhs = 0;
+            foreach my $ortholog (@{$rbh_results[$i]->{$rbh}})
+            {
+                push(@useful_rbhs, $ortholog);
+                $no_rbhs++;
+            }
+            $rbh_numbers{$rbh} = $no_rbhs;
         }
         
         $rbh_results[$i] = ();
         
         @useful_genes = shuffle(@useful_genes);
-        # @useful_rbhs = shuffle(@useful_rbhs);
+        @useful_rbhs = shuffle(@useful_rbhs);
         
-        for(my $j=0;$j<scalar(@useful_genes);$j++)
+        my $j = 0;
+        for(my $k=0;$k<scalar(@useful_genes);$k++)
         {
-            # push @{ $rbh_results[$i]->{ $useful_genes[$j] } }, $useful_rbhs[$j];
-            $rbh_results[$i]->{ $useful_genes[$j] } = $useful_rbhs[$j];
-
+            while($rbh_numbers{$useful_genes[$k]})
+            {
+                push(@{$rbh_results[$i]->{$useful_genes[$k]}}, $useful_rbhs[$j]);
+                $j++;
+                $rbh_numbers{$useful_genes[$k]}--;
+            }
         }
+
+        print $logfile "Warning: Running with Pseudo Orthologs\n";
+
+        # my %rbhs = $rbh_results[$i];
+
+        # my @useful_genes = ();
+        # my @useful_rbhs = ();
+        
+        # foreach my $rbh (keys %{$rbh_results[$i]})
+        # {
+        #     # if($rbh_results[$i]->{$rbh} ne "none")
+        #     # {
+        #         push(@useful_genes, $rbh);
+        #         push(@useful_rbhs, $rbh_results[$i]->{$rbh});
+        #     # }
+        # }
+        
+        # $rbh_results[$i] = ();
+        
+        # @useful_genes = shuffle(@useful_genes);
+        # # @useful_rbhs = shuffle(@useful_rbhs);
+        
+        # for(my $j=0;$j<scalar(@useful_genes);$j++)
+        # {
+        #     # push @{ $rbh_results[$i]->{ $useful_genes[$j] } }, $useful_rbhs[$j];
+        #     $rbh_results[$i]->{ $useful_genes[$j] } = $useful_rbhs[$j];
+
+        # }
     }
 }
 
