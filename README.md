@@ -68,6 +68,21 @@ With Species_1 being the central species, you will have the following folder str
 ```
 See `/cyverseZone/home/shared/cyverseuk/apples_testdata/apples_conservation_multiple/app_short` for an example.
 
+**Checklist**
+
+Please check the followings in order to get correct results from the module:
+
+:white_check_mark: Apart from the main species (e.g. Species\_1 in our example), all other species must have a `rbhSearch_result.txt` file which annotates the orthologs between itself and the main species. This file needs to have a total of 4 columns (tab-separated):
+ 
+ - Column 1: Species 1's protein ID;
+ - Column 2: Species 2's protein ID;
+ - Column 3: Species 2's gene ID;
+ - Column 4: Species 1's gene ID.
+
+i.e. "Species\_1\_proteinID Species\_2\_proteinID Species\_2\_geneID Species\_2\_geneID". This is the format produced by the APPLES_rbh module.
+
+:white_check_mark: The gene IDs in your `rbhSearch_result.txt` must match those in your `PlantA.fa` file. If these don't match, the program will not produce any result.
+
 ![Screenshot of APPLES_conservation_multiple on CyVerse DE](https://github.com/cyversewarwick/apples/blob/master/files/screenshot_conservation_multiple.png)
 
 #### APPLES\_rbh
