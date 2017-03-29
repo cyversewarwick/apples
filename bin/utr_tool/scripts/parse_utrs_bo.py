@@ -8,6 +8,8 @@ annot = pd.read_csv('annot.gff3',header=None,index_col=None,sep='\t',comment='#'
 #write out 5' UTR BED
 utr5 = open('utr5.bed','w')
 utr3 = open('utr3.bed','w')
+#and also write CDS span gene lines
+cds = open('genelines2.bed','w')
 
 #the order is the same in the universe.txt as it is in annot.gff3
 #after all, annot.gff3 was used to craft universe.txt
@@ -46,6 +48,10 @@ for i in np.arange(prom.shape[0]):
 			newpos = np.min(temp[:,3])
 			holdlist = [prom[i,0],prom[i,1],newpos,prom[i,3],prom[i,4],prom[i,5]]
 			utr3.write('\t'.join([str(x) for x in holdlist])+'\n')
+		#regardless of right to leftness or left to rightness, picking up the CDS span
+		holdlist = [prom[i,0],np.min(temp[:,3]),np.max(temp[:,4]),prom[i,3],prom[i,4],prom[i,5]]
+		cds.write('\t'.join([str(x) for x in holdlist])+'\n')
 
 utr5.close()
 utr3.close()
+cds.close()

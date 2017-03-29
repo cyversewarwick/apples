@@ -49,22 +49,28 @@ python3 ../scripts/parse_utrs_bo.py
 cut -f 4 genelines.bed > universe.txt
 
 bedtools flank -l $4 -r 0 -s -i genelines.bed -g bedgenome.genome > promoters.bed
-#remove overlapping promoter chunks
-if [ $5 == '--NoOverlap' ]
-	then
-		bedtools subtract -a promoters.bed -b genelines.bed > promoters2.bed
-		mv promoters2.bed promoters.bed
-fi
-#assess integrity
-python3 ../scripts/assess_integrity.py
-
-echo "hello"
 
 #possibly add 5' UTR
 if [ $6 == '--UseUTR' ]
 	then
 		python3 ../scripts/parse_utrs.py
 fi
+
+#remove overlapping promoter chunks
+if [ $5 == '--NoOverlap' ]
+	then
+		#genelines2.bed is a CDS-only region file created in parse_utrs_bo.py
+		python3 ../scripts/subtract.py --Input promoters.bed --Remove genelines2.bed --Output promoters2.bed --Kick
+		python3 ../scripts/subtract.py --Input utr5.bed --Remove genelines2.bed --Output utr52.bed
+		mv promoters2.bed promoters.bed
+		mv utr5w.bed utr5.bed
+fi
+#assess integrity
+python3 ../scripts/assess_integrity.py
+
+echo "hello"
+
+
 bedtools getfasta -fi genome_stripped.fa -bed promoters.bed -s -fo promoters.fa -name
 #this results in some really crappy nomenclature for gene names
 #so let's make promoters.fa ourselves
