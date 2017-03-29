@@ -68,7 +68,7 @@ fi
 #assess integrity
 python3 ../scripts/assess_integrity.py
 
-echo "UTR version 1.1"
+echo "UTR version 1.1.1"
 
 
 bedtools getfasta -fi genome_stripped.fa -bed promoters.bed -s -fo promoters.fa -name
